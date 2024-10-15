@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lecture 6 - WebSockets in JS</title>
+</head>
+<body>
+    <h1>WebSocket Example</h1>
+    <input type="text" id="message" placeholder="Enter a message" />
+    <button id="send">Send</button>
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById("output");
+        const messageInput = document.getElementById("message");
+        const sendButton = document.getElementById("send");
+
+        const socket = new WebSocket("ws://localhost:8080/websocket");
+
+        socket.onopen = () => {
+            output.innerHTML += "<p>Connected to the server.</p>";
+        };
+
+        socket.onmessage = (event) => {
+            output.innerHTML += `<p>Server>> ${event.data}</p>`;
+        };
+
+        socket.onclose = () => {
+            output.innerHTML += "<p>Connection closed.</p>";
+        };
+
+        sendButton.addEventListener("click", () => {
+            const message = messageInput.value;
+            socket.send(message);
+            output.innerHTML += `<p>You>> ${message}</p>`;
+            messageInput.value = "";
+        });
+    </script>
+</body>
+</html>
