@@ -1,4 +1,5 @@
 import socket
+import tornado
 
 PORT = 8080
 
@@ -62,3 +63,27 @@ def udp_client():
 # tcp_client()
 # udp_client()
 udp_server()
+
+
+#  Websockets
+
+class WSHandler(tornado.websocket.WebSocketHandler):
+    def check_origin(self, origin):
+        return True
+
+    def open(self):
+        print("Connection opened")
+
+    def on_close(self):
+        print("Connection closed")
+
+    def on_message(self, message):
+        print("received: ", message)
+        
+        
+if __name__ == "__main__":
+    app = tornado.web.Application([(r'/websocket', WSHandler)])
+                                    
+                                    
+    app.listen(PORT,"localhost")
+    tornado.ioloop.IOLoop.current().start()
