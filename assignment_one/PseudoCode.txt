@@ -4,8 +4,9 @@ Client
 register() 
     Ask for a username
     Send to server to ask if it is taken - server responds with success or failure 
-    If it is taken, go back to asking for a username
-    If it is not taken, ask for a password
+    If it is taken, ask for a different username
+    repeat until a unique username is chosen or the user types exit
+    ask for a password
     Send username and password to server
     Server responds with success or failure
 
@@ -82,4 +83,16 @@ main()
 
 Server
 
+get_list_of_chatrooms()
+    Query the database for a list of chatrooms
+    return the list of chatrooms as array of strings
+
+
+join_chatroom(request)
+    Query the database for the messages in the chatroom
+    return the messages as an array of strings
+
+login(request)
+    Query the database for the username and password
+    return success or failure
 
