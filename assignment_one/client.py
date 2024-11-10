@@ -144,7 +144,9 @@ async def logged_in(connection,username):
         print("restarting application")
         await connection.close()
         await main()
-             
+        
+    print(f"\033[94mLogged in as {username}\033[0m\n")
+    
     # Get user choice
     print("What would you like to do?")
     print("    1. Join a chatroom")
@@ -227,7 +229,6 @@ async def prompt_username(connection):
                 print("Invalid choice. Enter (1-3)")
                 input("Press any key to continue...")
                 
-
 
 async def main():
     # Initialize the websocket connection

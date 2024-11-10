@@ -4,10 +4,14 @@ import sqlite3
 import json
 from datetime import datetime
 import hashlib
+from websockets.server import ServerProtocol
 
 PORT = 8765
 
-DB_NAME = "chat.db"
+DB_NAME = "./additional_files/chat.db"
+
+# Store active connections 
+active_connections: set[ServerProtocol] = set()
 
 async def respond_with_list_of_chatrooms(websocket):
     conn = sqlite3.connect(DB_NAME)
@@ -30,7 +34,7 @@ async def respond_with_list_of_chatrooms(websocket):
     await websocket.send(json.dumps(response))
     
     
-async def new_message(request,websocket):
+async def new_message(request):
     content = request["content"]
     room = request["room"]
     username = request["username"]
@@ -41,7 +45,9 @@ async def new_message(request,websocket):
     conn.commit()
     conn.close()
     print('new_message sent')
-    await websocket.send(json.dumps({"new_message": room}))
+    # To broadcast to all
+    for connection in active_connections:
+        await connection.send(json.dumps({"new_message": room}))
     
 
 async def join_chatroom(request,websocket):
@@ -138,6 +144,9 @@ async def create_new_chatroom(request,websocket):
 
 async def handle_client(websocket):
     try:
+        # When a client connects, add to set
+        active_connections.add(websocket)
+        
         async for request in websocket:
             request = json.loads(request)
             request_type = request["request_type"]
@@ -161,6 +170,8 @@ async def handle_client(websocket):
         
     except websockets.exceptions.ConnectionClosed:
         print("Client disconnected")
+        # When a client disconnects, remove from set
+        active_connections.remove(websocket)
 
 async def start_server():
     server = await websockets.serve(handle_client, "localhost", PORT)

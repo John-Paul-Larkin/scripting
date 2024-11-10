@@ -4,7 +4,7 @@ import random
 
 
 # Connect to database (creates it if it doesn't exist)
-conn = sqlite3.connect('chat.db')
+conn = sqlite3.connect('./additional_files/chat.db')
 cursor = conn.cursor()
 
 # Enable foreign key support
@@ -36,7 +36,8 @@ CREATE TABLE messages (
 )
 ''')
 
-# Add sample users first
+# Add sample users first - these are the users that will be used to seed the messages
+# The passwords are not hashed, so these accounts are not accessible via the login screen
 sample_users = [
     ("Tom", "tom"),
     ("Patrizio", "patrizio"),
@@ -50,7 +51,7 @@ INSERT OR IGNORE INTO users (user_name, password)
 VALUES (?, ?)
 ''', sample_users)
 
-# Add some dummy messages
+# Seed some dummy messages
 rooms = ["General", "Cats", "Tech talk", "Foodies"]
 users = ["Tom", "Patrizio", "John", "Colm", "Kate"]
 sample_messages = [
