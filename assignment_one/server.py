@@ -10,7 +10,7 @@ PORT = 8765
 
 DB_NAME = "./additional_files/chat.db"
 
-# Store active connections 
+# Store active connections - This is used to broadcast messages to all clients
 active_connections: set[ServerProtocol] = set()
 
 async def respond_with_list_of_chatrooms(websocket):
@@ -160,7 +160,7 @@ async def handle_client(websocket):
             elif request_type == "login":
                 await login(request,websocket)
             elif request_type == "new_message":
-                await new_message(request,websocket)
+                await new_message(request)
             elif request_type == "check_username_exists":
                 await check_username_exists(request,websocket)
             elif request_type == "register":
