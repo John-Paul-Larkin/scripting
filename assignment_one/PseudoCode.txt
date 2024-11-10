@@ -1,0 +1,85 @@
+
+Client
+
+register() 
+    Ask for a username
+    Send to server to ask if it is taken - server responds with success or failure 
+    If it is taken, go back to asking for a username
+    If it is not taken, ask for a password
+    Send username and password to server
+    Server responds with success or failure
+
+def get_chatrooms():
+    Query the server for a list of chatrooms
+    return the list of chatrooms
+
+
+login()
+    Ask username and password
+    create an object with the username and password and request_type = "login"
+    Send to server
+    Server responds with success or failure
+    if success
+        logged_in(connection)
+    else
+        print login failed
+        main()
+
+make_new_chatroom()
+    ask the user for a new chatroom name
+    send the new chatroom name to the server
+    Server responds with success or failure
+    if success
+        start_chat()
+    else
+        return failure
+
+logged_in()
+    Query the server for a list of chatrooms
+    print the list of chatrooms, with an index for each
+    ask the user if they would like to join a chatroom, make a new one, or log out
+    if join a chatroom  
+        ask the user which chatroom they would like to join
+        send the chatroom index/name to the server
+        Server responds with messages from the chatroom
+        start_chat(messages)
+    else if make a new chatroom
+        make_new_chatroom()
+    else if log out
+        main()
+
+
+
+start_chat(messages)
+    tell the user to type exit to leave the chatroom
+    display the messages from the chatroom
+    wait for the user to input a message
+    if exit 
+        logged_in()
+    else send the message to the server
+    check the server for new messages
+    display the new messages
+    repeat
+
+
+connect_websocket()
+
+
+
+main()
+    connect_websocket()
+
+    Ask the user to login or register or exit?
+     if Login
+        login()
+     else if Register
+        register()
+     else if Exit
+        connection.close()
+        return
+ 
+
+
+Server
+
+

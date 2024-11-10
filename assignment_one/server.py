@@ -1,28 +1,76 @@
+import asyncio
+import websockets
+import sqlite3
+import json
+from datetime import datetime
 
-import socket
+PORT = 8765
 
-PORT  = 8080
+async def handle_client(websocket):
+    try:
+        async for request in websocket:
+            request = json.loads(request)
+            
+            request_type = request["request_type"]
+            
+            if request_type == "get_chatrooms":
+                # TODO: Implement fetching chatrooms from database
+                chatrooms = ["General", "Random", "Tech"]  # Placeholder
+                response = {
+                    "success": "true",
+                    "chatrooms": str(chatrooms)
+                }
+                await websocket.send(json.dumps(response))
+                continue
 
-def tcp_server():
-    # create the socket object
-    server_socket = socket.socket(socket.AF_INET, 
-                                socket.SOCK_STREAM )
-    # book a port
-    server_socket.bind(('localhost',PORT))
+            elif request_type == "join_room":
+                room = request["room"]
+                # TODO: Implement fetching room messages from database
+                messages = []  # Placeholder for room messages
+                response = {
+                    "success": "true", 
+                    "messages": messages
+                }
+                await websocket.send(json.dumps(response))
+                continue
 
-    # listen for incoming connection
-    server_socket.listen(5)
+            elif request_type == "login":
+                username = request["username"]
+                password = request["password"]
+                # TODO: Implement password verification
+                # For now, accept any login
+                response = {
+                    "success": "true"
+                }
+                await websocket.send(json.dumps(response))
+                continue
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            response = {
+                "success": "true",
+                "response": "message received"
+            }   
+            await websocket.send(json.dumps(response))
+    except websockets.exceptions.ConnectionClosed:
+        print("Client disconnected")
 
-    while True:
-        client_socket, client_address = server_socket.accept()
-        print(f"Connection established with {client_address}")
+async def start_server():
+    server = await websockets.serve(handle_client, "localhost", PORT)
+    print(f"WebSocket server started on ws://localhost:{PORT}")
+    await server.wait_closed()
 
-        data = client_socket.recv(1024).decode()
-        print(f"Received from client {data}")
-        client_socket.send(f"back to you! {data}".encode())
-        
-        client_socket.close()
-        
-        
+
 if __name__ == "__main__":
-    tcp_server() 
+    try:
+        asyncio.run(start_server())
+    except KeyboardInterrupt:
+        print("WebSocket server stopped")
