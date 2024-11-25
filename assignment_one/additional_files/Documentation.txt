@@ -1,0 +1,65 @@
+For my Python Scripting assignemt, I developed a real-time chat application consisting of both client and server components written in Python. 
+The primary goal was to create a functional chat system where users could register, log in, join existing chatrooms, create new ones, and communicate in real-time. 
+This project allowed me to delve deep into asynchronous programming, real-time communication, and database management using Python's capabilities.
+
+How to run the program
+1. Run the server.py file using Python3.
+2. Run the client.py file using Python3.
+3. Run further instances of the client.py file to add more users and test the application.
+
+The data is stored in a local SQLite database 'chat.db' in the additional_files folder. 
+This database can be deleted and recreated/seeded with data using the create_db.py file.
+There is also a Psuedo_code file which contains my original plan for the assignment which I had written before I started coding.
+This Pseudo_code is pretty basic, and does not contain any code, it just contains my original thoughts on how I planned to implement the assignment.
+
+
+Technologies and Libraries Used
+Python Asyncio: Utilized for asynchronous programming to handle multiple simultaneous connections without blocking the main thread.
+WebSockets: Implemented using the websockets library to enable real-time communication between the client and server.
+SQLite: Used as the database to store user credentials and chat messages persistently.
+Aioconsole: Employed on the client side to read user input asynchronously, ensuring the interface remains responsive.
+hashlib: Used to hash passwords before storing them in the database.
+
+Client-Side Functionality (client.py)
+The client script provides a command-line interface for users to interact with the chat application. Key features include:
+Asynchronous Messaging:Sending and receiving messages are handled asynchronously, allowing for real-time communication without interface lag.
+The client listens for incoming messages and updates the chat display promptly.
+Connection Handling: Implements safe_send and safe_receive functions to manage potential disconnections.
+Attempts to reconnect automatically if the connection to the server is lost.
+Provides user feedback on connection status and guides them through reconnection or application restart if necessary.
+
+Server-Side Functionality (server.py):
+The server script manages client connections, user authentication, message broadcasting, and database interactions. Key features include,
+User Authentication: Handles login and registration requests securely.
+Passwords are hashed using SHA-256 before being stored in the SQLite database, enhancing security.
+Chatroom Management: Maintains a list of active chatrooms and users within each room.
+Allows creation of new chatrooms, ensuring room names are unique.
+Tracks active connections and manages user entries and exits from chatrooms.
+Message Broadcasting: Stores messages in the database with timestamps and associated usernames and chatrooms.
+Broadcasts new messages to all connected clients within the relevant chatroom.
+Utilizes asynchronous tasks to handle multiple message broadcasts efficiently.
+
+Connection and Keep-Alive Handling: Manages client connections using asyncio and handles exceptions such as disconnections gracefully.
+Implements a keep_alive function to send periodic pings to clients, ensuring connections remain active and detecting any lost connections promptly.
+Challenges and Learning Outcomes: One of the significant challenges was handling network interruptions and ensuring the application remained robust under unstable network conditions. 
+Implementing reconnection logic on the client side and managing unexpected disconnections on the server side required consideration of asynchronous exception handling.
+Another challenge was maintaining data consistency across multiple clients and chatrooms. Ensuring that messages were correctly stored and broadcasted in real-time necessitated an efficient use of asynchronous programming patterns.
+
+
+
+Future Improvements
+Encryption: Implement end-to-end encryption (E2EE) to ensure messages are encrypted on the sender's side and can only be decrypted by the intended recipient. 
+This protects user privacy and prevents the server from accessing message content. Secure communication protocols like TLS/SSL will safeguard data in transit, while 
+libraries such as `cryptography` will handle robust encryption mechanisms.
+
+Graphical User Interface: Transition to a user-friendly GUI using frameworks like Tkinter, PyQt, or Kivy to provide a more engaging and accessible experience. 
+Features like chat bubbles, file sharing, customisable themes, and desktop notifications will enhance usability. Adding responsive designs ensures compatibility 
+across devices, making the application more versatile for a wider audience.
+
+User Presence Notifications: 
+Provide real-time updates when users join or leave chatrooms, fostering a sense of interaction and community. Status indicators (online, offline, typing) and notifications enhance engagement. 
+Efficient server-side broadcasting will manage these updates, ensuring seamless integration while maintaining performance for larger groups.
+
+Private Messaging: 
+Enable users to send direct messages outside public chatrooms for personal or confidential communication. Features like contact lists, individual chat windows, and privacy 
+controls (block or allow messaging) will improve functionality. Secure handling of these messages, paired with encryption, ensures both privacy and reliability for user interactions.
