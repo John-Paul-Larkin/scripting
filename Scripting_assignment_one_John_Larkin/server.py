@@ -1,3 +1,7 @@
+# John Paul Larkin
+# c00001754
+# 25/11/2024 - Scripting Assignment one
+
 import asyncio
 from os import system
 import sys

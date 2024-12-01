@@ -1,0 +1,33 @@
+Starting Starting Incremental backup at: 2024-12-01 18:31:01.400979
+CPU Usage: 6.0%
+Memory Usage: 55.3%
+Total Disk Space: 228.27 GB
+Used Disk Space: 12.30 GB
+Free Disk Space: 41.16 GB
+Disk Usage Percentage: 23.0%
+Operating System: posix
+Starting Starting Incremental backup at: 2024-12-01 18:31:34.380559
+CPU Usage: 2.4%
+Memory Usage: 55.2%
+Total Disk Space: 228.27 GB
+Used Disk Space: 12.30 GB
+Free Disk Space: 41.16 GB
+Disk Usage Percentage: 23.0%
+Operating System: posix
+
+Incremental Backup Summary:
+New files copied: 0
+
+Modified files updated: 0
+
+Unchanged files: 5
+test4.txt
+test
+test2.txt
+test3.txt
+test.txt
+Backup completed at: 2024-12-01 18:31:42.847888
+Starting compressed archive at: 2024-12-01 18:31:50.000558
+
+Compressed archive created successfully: /Users/jpl/backup_20241201_183150.zip
+Finish compress process at: 2024-12-01 18:31:50.004854
