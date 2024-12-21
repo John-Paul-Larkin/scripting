@@ -74,8 +74,7 @@ if __name__ == "__main__":
     
     # Loop until the user chooses to exit by entering 3
     while True:
-        choice = input("Would you like to (1) Sign up, (2) Log in, or (3) Exit? ")
-        
+        choice = input("Would you like to (1) Sign up, (2) Log in, or (3) Exit? ")    
         if choice == "1":
             sign_up()
         elif choice == "2": 
