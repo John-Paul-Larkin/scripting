@@ -19,12 +19,16 @@ def bottom_three(stats_table):
     ranked_rows = []
     # Iterate through the rows and extract rank and team name
     for row in rows:
+        # Find the rank cell and team cell
         rank_cell = row.find('th', {"data-stat": "rank"})
         team_cell = row.find('td', {"data-stat": "team"})
+        
         if rank_cell and team_cell:
+            # Extract rank and team name text
             rank_value = rank_cell.text.strip()
             if rank_value.isdigit():
-                team_name = team_cell.find('a').text.strip()  # Get team name from the anchor tag
+                # Get team name from the anchor tag
+                team_name = team_cell.find('a').text.strip()  
                 ranked_rows.append((int(rank_value), team_name))
     
     # Sort rows by rank (ascending)
@@ -77,7 +81,7 @@ def main():
     stats_table = soup.find('table', {'id': ID}) 
     
     # Extract table headers
-    headers = [th.text.strip() for th in stats_table.find_all('th')]
+    # headers = [th.text.strip() for th in stats_table.find_all('th')]
     # print("Headers:", headers)
     
     # Get and print bottom three teams

@@ -15,34 +15,26 @@ def fetch_data():
         print("Failed to fetch data")
         exit()
     return data
-    
+
+# Loop through all pages and fetch the data
 def loop_through_all(num_pages):
-    # Initialize an empty list to store all items
+    # Initialise an empty list to store all items(wanted individuals)
     all_wanted = []
 
-    # Calculate total pages needed
-    page = 1
-    response = requests.get(f"{BASE_URL}?page={page}")
-    data = response.json()
-    total_records = data['total']
-
-    print(f"Starting to fetch {total_records} records across {num_pages} pages...")
-
-    # Fetch data from all pages
+    # Fetch data from specified number of pages
     for page in range(1, num_pages):
-        print(f"Fetching page {page} of {num_pages}...")
+    
         response = requests.get(f"{BASE_URL}?page={page}")
-
         if response.status_code == 200:
             page_data = response.json()
+            # Add the items from the current page to the all_wanted list
             all_wanted.extend(page_data['items'])
         else:
             print(f"Failed to fetch page {page}")
             continue
 
-
     print(f"\nFetched a total of {len(all_wanted)} wanted individuals") 
-        # Save the data to a JSON file
+    # Save the data to a JSON file
     with open('wanted_data.json', 'w', encoding='utf-8') as f:
         json.dump(all_wanted, f, indent=2)
     return all_wanted
@@ -55,7 +47,6 @@ def print_top_20(data):
         if i < len(data['items']):
             item = data['items'][i]
             print(f"{i+1}. {item['title']}")
-
 
 # print the keys available for each wanted individual
 def print_item_keys(data):
