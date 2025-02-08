@@ -5,16 +5,7 @@ import json
 # Define the URL for the API
 BASE_URL = "https://api.fbi.gov/wanted/v1/list"
 
-# Fetch the data from the API
-def fetch_data():
-    response = requests.get(BASE_URL)
-    if response.status_code == 200:
-        data = response.json()
-    else:
-        print(response.status_code)
-        print("Failed to fetch data")
-        exit()
-    return data
+1
 
 # Loop through all pages and fetch the data
 def loop_through_all(num_pages):
