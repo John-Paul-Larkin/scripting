@@ -13,6 +13,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 
 class Database:
+    # Constructor for the Database class
     def __init__(self, db_name="star_wars.db"):
         # Connect to the database/ create it if it doesn't exist
         self.connection = sqlite3.connect(db_name)    
