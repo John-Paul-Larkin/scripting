@@ -163,78 +163,83 @@ def update_stock_db(company_stock_data: list[dict[str, str]], headlines_data: li
     
     #  Iterates through the company stock data 
     for company in company_stock_data:
-        #  For each company, the stock data is extracted from the dictionary and added to a row_data dictionary
-        row_data = {
-            'symbol': company['01. symbol'],
-            'open': company['02. open'],
-            'high': company['03. high'],
-            'low': company['04. low'],
-            'price': company['05. price'],
-            'volume': company['06. volume'],
-            'latest_trading_day': company['07. latest trading day'],
-            'previous_close': company['08. previous close'],
-            'change': company['09. change'],
-            'change_percent': company['10. change percent'],
-        }
-    
-        # symbol and latest trading day - Used in the headlines table
-        symbol = row_data['symbol']
-        latest_trading_day = row_data['latest_trading_day']    
-        
-        # print to see what we are trying to insert
-        print("\nAttempting to insert data:")
-        print(f"Symbol: {symbol}")
-        print(f"Latest Trading Day: {latest_trading_day}")
-        
+        #  Inserts the stock data into the stocks table
+        symbol, latest_trading_day = insert_into_stocks_table(cur, company)
 
-        
-        columns = list(row_data.keys())
-        placeholders = ", ".join("?" for _ in columns)
-        values = [row_data[col] for col in columns]
-        
-        
-        update_cols = ", ".join(f"{col}=excluded.{col}" for col in columns if col not in ['symbol', 'latest_trading_day'])
-        
-        sql = f"""
-            INSERT INTO stocks ({', '.join(columns)})
-            VALUES ({placeholders})
-            ON CONFLICT(symbol, latest_trading_day) 
-            DO UPDATE SET {update_cols}
-        """
-        
-        try:
-            cur.execute(sql, values)
-            print(f"Successfully inserted/updated data for {symbol}")
-        except sqlite3.Error as e:
-            print(f"Error with database operation: {e}")
-            print("Values being inserted:", values)  # Debug print 
-
+        # Now that the stock data has been inserted
+        # Iterate through the headlines data and insert the headlines - for that company
         for headline_dict in headlines_data:
-     
-            if symbol in headline_dict:
-                for headline_text, headline_url in headline_dict[symbol]:
-                   
-                       
-                    headlines_row_data =  {
-                        'symbol': symbol,
-                        'headline': headline_text,
-                        'url': headline_url,
-                        'latest_trading_day': latest_trading_day
-                    }
-        
-                    try:
-                        cur.execute('''
-                            INSERT INTO headlines (symbol, headline, url, latest_trading_day   )
-                            VALUES (?, ?, ?, ?)
-                        ''', (headlines_row_data['symbol'], headlines_row_data['headline'], headlines_row_data['url'], headlines_row_data['latest_trading_day']))
-                        print(f"Successfully inserted/updated headline for {symbol}")
-                    except sqlite3.Error as e:
-                        print(f"Error inserting headline: {e}")
+            insert_into_headlines_table(cur, symbol, latest_trading_day, headline_dict)
  
     
     conn.commit()
     conn.close()
     print("\nDatabase operations completed.")
+    
+    
+
+#  Inserts the stock data into the stocks table - for an individual company
+#  Returns the symbol and latest trading day - as they are used in the headlines table
+def insert_into_stocks_table(cur: sqlite3.Cursor, company: dict) -> tuple[str, str]:
+    #  For each company, the stock data is extracted from the dictionary and added to a row_data dictionary
+    row_data = {
+        'symbol': company['01. symbol'],
+        'open': company['02. open'],
+        'high': company['03. high'],
+        'low': company['04. low'],
+        'price': company['05. price'],
+        'volume': company['06. volume'],
+        'latest_trading_day': company['07. latest trading day'],
+        'previous_close': company['08. previous close'],
+        'change': company['09. change'],
+        'change_percent': company['10. change percent'],
+    }
+
+    # symbol and latest trading day - Used in the headlines table
+    symbol = row_data['symbol']
+    latest_trading_day = row_data['latest_trading_day']    
+    
+    # print to see what we are trying to insert
+    print("\nAttempting to insert data:")
+    print(f"Symbol: {symbol}")
+    print(f"Latest Trading Day: {latest_trading_day}")
+    
+    # Creates a list of the column names 
+    columns = list(row_data.keys())
+    # Creates a string of ?'s for each column ie - "?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
+    placeholders = ", ".join("?" for _ in columns)
+    # Creates a list of the values to be inserted
+    values = [row_data[col] for col in columns]
+     
+    try:
+        cur.execute(f"""
+            INSERT INTO stocks ({', '.join(columns)})
+            VALUES ({placeholders})
+        """, values)
+        
+        print(f"Successfully inserted/updated data for {symbol}")
+    except sqlite3.Error as e:
+        print(f"Error with database operation: {e}")
+        print("Values being inserted:", values)  
+
+    return symbol, latest_trading_day
+
+#  Inserts the headlines into the headlines table - for an individual company
+def insert_into_headlines_table(cur: sqlite3.Cursor, symbol: str, latest_trading_day: str,headline_dict: dict[str, list[tuple[str, str]]]):
+     
+     #  We only insert the headlines for the current company(symbol)
+    if symbol in headline_dict:
+        for headline_text, headline_url in headline_dict[symbol]:
+            #  Inserts the headline data into the headlines table
+            try:
+                cur.execute('''
+                    INSERT INTO headlines (symbol, headline, url, latest_trading_day   )
+                    VALUES (?, ?, ?, ?)
+                ''', (symbol, headline_text, headline_url, latest_trading_day))
+                print(f"Successfully inserted/updated headline for {symbol}")
+            except sqlite3.Error as e:
+                print(f"Error inserting headline: {e}")
+
 
 def write_stock_data_to_txt_file(company_stock_data: list[dict[str, str]], headlines_data: list[dict[str, list[tuple[str, str]]]]):
     with open('stock_data.txt', 'w') as f:
@@ -243,7 +248,6 @@ def write_stock_data_to_txt_file(company_stock_data: list[dict[str, str]], headl
         f.write(str(headlines_data))
 
 def fetch_data() -> tuple[list[dict[str, str]], list[dict[str, list[tuple[str, str]]]]]:
-    
 
     # company_stock_data = []
     # headlines_data = []
