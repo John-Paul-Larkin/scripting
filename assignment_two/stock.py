@@ -366,9 +366,17 @@ def tabulate_data() -> None:
         
         table_data = []
         prev_values = {}
+        current_symbol = None
         
         for row in rows:
             symbol = row[0]
+            
+            # Add empty row when switching to a new company
+            if current_symbol is not None and symbol != current_symbol:
+                table_data.append([''] * len(headers))  # Add empty row
+                
+            current_symbol = symbol
+            
             # Convert row tuple -> list so we can replace strings with colored strings
             colored_row = list(row)
             
