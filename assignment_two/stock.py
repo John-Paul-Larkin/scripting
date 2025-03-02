@@ -24,10 +24,12 @@ COMPANIES = {
     "Alphabet": "GOOGL"
 }
 
+DB_FILENAME='stocks.db'
+
 #  Fetches daily stock data(in json format) for a given company symbol from Alpha Vantage api
+#  Returns a dictionary of stock data for a single company
 def fetch_stock_data(symbol: str) -> dict:
     #  symbol is the stock symbol of the company to fetch data for i.e. NVDA, MSFT, TSLA, GOOGL
-    #  Returns a dictionary of stock data for a single company
     # Alpha Vantage API URL
     BASE_URL = "https://www.alphavantage.co/query"
     
@@ -42,8 +44,8 @@ def fetch_stock_data(symbol: str) -> dict:
     response = requests.get(BASE_URL, params=params)
     data = response.json()
 
+    #  If the data is not found, print an error message
     if "Global Quote" not in data:
-        #  If the data is not found, print an error message
         print(f"Error fetching data for {symbol}: {data}")
     
     print(f"Fetched data for {symbol}:")
@@ -51,58 +53,70 @@ def fetch_stock_data(symbol: str) -> dict:
     #  Returns the data for the company
     return data["Global Quote"]
 
-
-
+#  Fetches the headlines for a given company symbol from Yahoo Finance
+#  Returns a list of tuples( headline and the url of the article)
 def get_yahoo_headlines(symbol: str) -> list[tuple[str, str]]:
 
+    #  Usied a real browser User-Agent string to avoid being blocked by Yahoo anti-bot measures
+    #  This makes our request appear as if it's coming from a Chrome browser rather than a script
+    # taken from https://www.zenrows.com/blog/user-agent-web-scraping#importance
     headers = {
         'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
                        'AppleWebKit/537.36 (KHTML, like Gecko) '
                        'Chrome/115.0.0.0 Safari/537.36')
     }
     
+    #  url when a search is made on yahoo finance for a given company symbol
+    #  Auto correct was changeing the search term - had to experiment with the url
     url= f"https://search.yahoo.com/search;_ylt=AwrEtespXrtnjPQMAQRXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Fydw--?ei=UTF-8&fp=1&p={symbol}&norw=1&fr=yfp-t"
-    #  Auto cirrect was changeing the search term - had to experiment
     
     try:
+        print(f"Fetching data for {symbol} from Yahoo Finance")
+        #  Requests the data from the url
         response = requests.get(url, headers=headers)
         response.raise_for_status()
     except requests.RequestException as e:
         print(f"Error retrieving data: {e}")
     
+    #  BeautifulSoup is used to parse the response as html
     soup = BeautifulSoup(response.text, 'html.parser')
     
     headlines = []
-    
+    #  Selects all the articles with the class title u-trunc3 and iterates through them
+    #  This is the class for the headline of the article and greatly reduces the amount of data to parse
     for article in soup.select("div.title.u-trunc3"):
+        #  Selects the span with the class s-title which contains the headline text
         title_span = article.select_one("span.s-title")
+        #  Selects the parent anchor tag with the class bkgLink which contains the url of the article
         link = article.find_parent('a', class_='bkgLink')
+        #  If the span and link are found, the headline and url are added to the list
         if title_span is not None and link is not None:
             headline = title_span.get_text(strip=True)
-            #  Second argument ensures that if the link is not found, and cast to a str if an empty string is returned - instead of list[str] | None
-            headline_url = str(link.get('href', ''))  # Forces string type  
-            headlines.append((headline, headline_url))
-             
+            #  Second argument ensures that if the link is not found an empty string is returned. also cast to a str to eleminate list[str] | None
+            headline_url = str(link.get('href', '')) 
+            #  Appends the headline and url tuple to the list
+            headlines.append((headline, headline_url))           
     return headlines
 
-
-
-def verify_db_contents(db_file='stocks.db'):
-    conn = sqlite3.connect(db_file)
-    cur = conn.cursor()
+#  Helper function to verify the contents of the database 
+#  by printing the contents of the stocks and headlines tables - after the data has been inserted 
+def verify_db_contents(cur: sqlite3.Cursor) -> None:
     cur.execute("SELECT * FROM stocks")
     rows = cur.fetchall()
-    print("\nDatabase contents:")
+    print("\Stock table contents:")
     for row in rows:
         print(row)
-    conn.close()
-
-def update_stock_db(company_stock_data: list[dict[str, str]], headlines_data: list[dict[str, list[tuple[str, str]]]], db_file='stocks.db'):
-    print(f"\nConnecting to database: {db_file}")
-    conn = sqlite3.connect(db_file)
-    cur = conn.cursor()
+    print("\nHeadlines table contents:")
+    cur.execute("SELECT * FROM headlines")
+    rows = cur.fetchall()
+    for row in rows:
+        print(row)
     
+#  Creates the stocks and headlines tables in the database - if they don't already exist
+def create_tables(cur: sqlite3.Cursor)-> None:
     print("Creating stocks table...")
+    #  Creates the stocks table - if it doesn't already exist 
+    #  Unique constraint (symbol, latest_trading_day) ensures that each company's stock data is unique for a given trading day
     cur.execute('''
         CREATE TABLE IF NOT EXISTS stocks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -121,6 +135,9 @@ def update_stock_db(company_stock_data: list[dict[str, str]], headlines_data: li
     ''')
     
     print("Creating headlines table...")
+    #  Creates the headlines table - if it doesn't already exist 
+    #  Unique constraint (headline, latest_trading_day) ensures that each headline is unique for a given trading day
+    #  Foreign key constraint (symbol) references the stocks table - if the stock is deleted, the headline is also deleted
     cur.execute('''
         CREATE TABLE IF NOT EXISTS headlines (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -132,8 +149,21 @@ def update_stock_db(company_stock_data: list[dict[str, str]], headlines_data: li
             FOREIGN KEY (symbol) REFERENCES stocks(symbol) ON DELETE CASCADE
         );
     ''')
+
+#  Updates the database with the stock and headline data
+#  company_stock_data is a list of dictionaries containing the stock data for each company for the latest trading day
+#  headlines_data is a list of dictionaries containing the headlines data for each company(tuple of headline and url)
+def update_stock_db(company_stock_data: list[dict[str, str]], headlines_data: list[dict[str, list[tuple[str, str]]]]):
+    print(f"\nConnecting to database: {DB_FILENAME}")
+    conn = sqlite3.connect(DB_FILENAME)
+    cur = conn.cursor()
     
+    #  Creates the stocks and headlines tables in the database - if they don't already exist
+    create_tables(cur)
+    
+    #  Iterates through the company stock data 
     for company in company_stock_data:
+        #  For each company, the stock data is extracted from the dictionary and added to a row_data dictionary
         row_data = {
             'symbol': company['01. symbol'],
             'open': company['02. open'],
@@ -146,24 +176,27 @@ def update_stock_db(company_stock_data: list[dict[str, str]], headlines_data: li
             'change': company['09. change'],
             'change_percent': company['10. change percent'],
         }
-        
+    
+        # symbol and latest trading day - Used in the headlines table
         symbol = row_data['symbol']
-        latest_trading_day = row_data['latest_trading_day']
+        latest_trading_day = row_data['latest_trading_day']    
         
-        # Debug print to see what we're trying to insert
+        # print to see what we are trying to insert
         print("\nAttempting to insert data:")
         print(f"Symbol: {symbol}")
         print(f"Latest Trading Day: {latest_trading_day}")
         
-        columns = row_data  # Use row_data as our columns dictionary
+
         
-        values = [columns[col] for col in columns.keys()]
-        
+        columns = list(row_data.keys())
         placeholders = ", ".join("?" for _ in columns)
-        update_cols = ", ".join(f"{col}=excluded.{col}" for col in columns.keys() if col not in ['symbol', 'latest_trading_day'])
+        values = [row_data[col] for col in columns]
+        
+        
+        update_cols = ", ".join(f"{col}=excluded.{col}" for col in columns if col not in ['symbol', 'latest_trading_day'])
         
         sql = f"""
-            INSERT INTO stocks ({', '.join(columns.keys())})
+            INSERT INTO stocks ({', '.join(columns)})
             VALUES ({placeholders})
             ON CONFLICT(symbol, latest_trading_day) 
             DO UPDATE SET {update_cols}
@@ -175,8 +208,7 @@ def update_stock_db(company_stock_data: list[dict[str, str]], headlines_data: li
         except sqlite3.Error as e:
             print(f"Error with database operation: {e}")
             print("Values being inserted:", values)  # Debug print 
- 
-    
+
         for headline_dict in headlines_data:
      
             if symbol in headline_dict:
