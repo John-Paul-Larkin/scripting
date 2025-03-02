@@ -298,6 +298,23 @@ def fetch_data() -> tuple[list[dict[str, str]], list[dict[str, list[tuple[str, s
 # Displays historical stock data for a user-selected company in a formatted table.
 # Data is retrieved from the database and shows how the stock has changed over time.
 
+def color_numeric_cell_value(curr_val: float, prev_val: float, value_str: str) -> str:
+    """Helper function to color numeric values based on comparison with previous value.
+    
+    Args:
+        curr_val: Current numeric value
+        prev_val: Previous numeric value
+        value_str: String representation of the value to color
+        
+    Returns:
+        Colored string if value changed, original string if unchanged
+    """
+    if curr_val > prev_val:
+        return f"{Fore.GREEN}{value_str}{Style.RESET_ALL}"
+    elif curr_val < prev_val:
+        return f"{Fore.RED}{value_str}{Style.RESET_ALL}"
+    return value_str
+
 def tabulate_data() -> None:
     # Colors indicate changes from previous day:
     # Green: Increase
@@ -399,57 +416,36 @@ def tabulate_data() -> None:
             
             # (2) Price
             curr_price = float(row[2])
-            if curr_price > prev['price']:
-                colored_row[2] = f"{Fore.GREEN}{row[2]}{Style.RESET_ALL}"
-            elif curr_price < prev['price']:
-                colored_row[2] = f"{Fore.RED}{row[2]}{Style.RESET_ALL}"
+            colored_row[2] = color_numeric_cell_value(curr_price, prev['price'], row[2])
             
             # (3) Change vs. yesterday's Change
             curr_change = float(row[3])
-            if curr_change > prev['change']:
-                colored_row[3] = f"{Fore.GREEN}{row[3]}{Style.RESET_ALL}"
-            elif curr_change < prev['change']:
-                colored_row[3] = f"{Fore.RED}{row[3]}{Style.RESET_ALL}"
+            colored_row[3] = color_numeric_cell_value(curr_change, prev['change'], row[3])
             
             # (4) Change % vs. yesterday's Change %
             curr_chg_pct = float(row[4].rstrip('%'))
-            if curr_chg_pct > prev['change_percent']:
-                colored_row[4] = f"{Fore.GREEN}{row[4]}{Style.RESET_ALL}"
-            elif curr_chg_pct < prev['change_percent']:
-                colored_row[4] = f"{Fore.RED}{row[4]}{Style.RESET_ALL}"
+            colored_row[4] = color_numeric_cell_value(curr_chg_pct, prev['change_percent'], row[4])
             
             # (5) Volume
             curr_vol = int(row[5])
-            if curr_vol > prev['volume']:
-                colored_row[5] = f"{Fore.GREEN}{row[5]}{Style.RESET_ALL}"
-            elif curr_vol < prev['volume']:
-                colored_row[5] = f"{Fore.RED}{row[5]}{Style.RESET_ALL}"
+            colored_row[5] = color_numeric_cell_value(curr_vol, prev['volume'], row[5])
             
             # (6) High
             curr_high = float(row[6])
-            if curr_high > prev['high']:
-                colored_row[6] = f"{Fore.GREEN}{row[6]}{Style.RESET_ALL}"
-            elif curr_high < prev['high']:
-                colored_row[6] = f"{Fore.RED}{row[6]}{Style.RESET_ALL}"
+            colored_row[6] = color_numeric_cell_value(curr_high, prev['high'], row[6])
             
             # (7) Low
             curr_low = float(row[7])
-            if curr_low > prev['low']:
-                colored_row[7] = f"{Fore.GREEN}{row[7]}{Style.RESET_ALL}"
-            elif curr_low < prev['low']:
-                colored_row[7] = f"{Fore.RED}{row[7]}{Style.RESET_ALL}"
+            colored_row[7] = color_numeric_cell_value(curr_low, prev['low'], row[7])
             
             # (8) Open
             curr_open = float(row[8])
-            if curr_open > prev['open']:
-                colored_row[8] = f"{Fore.GREEN}{row[8]}{Style.RESET_ALL}"
-            elif curr_open < prev['open']:
-                colored_row[8] = f"{Fore.RED}{row[8]}{Style.RESET_ALL}"
+            colored_row[8] = color_numeric_cell_value(curr_open, prev['open'], row[8])
             
             # Append colored row
             table_data.append(colored_row)
             
-            # Finally, update stored “previous” values
+            # Finally, update stored "previous" values
             prev_values[symbol] = {
                 'price': curr_price,
                 'change': curr_change,
