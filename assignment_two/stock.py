@@ -1,15 +1,16 @@
 #  John Paul Larkin
-#  c00001754
+#  C00001754
 #  Assignment 2
 # 1/3/2025
 
 import os
 import sqlite3
 import requests
-import pandas as pd 
+from tabulate import tabulate
 from dotenv import load_dotenv
 # from tabulate import tabulate
 from bs4 import BeautifulSoup
+from colorama import Fore, Style
 
 # Load API key from .env file
 # Alpha Vantage is a financial data platform providing free APIs for stocks data
@@ -98,19 +99,33 @@ def get_yahoo_headlines(symbol: str) -> list[tuple[str, str]]:
             headlines.append((headline, headline_url))           
     return headlines
 
-#  Helper function to verify the contents of the database 
-#  by printing the contents of the stocks and headlines tables - after the data has been inserted 
-def verify_db_contents(cur: sqlite3.Cursor) -> None:
-    cur.execute("SELECT * FROM stocks")
-    rows = cur.fetchall()
-    print("\Stock table contents:")
-    for row in rows:
-        print(row)
-    print("\nHeadlines table contents:")
-    cur.execute("SELECT * FROM headlines")
-    rows = cur.fetchall()
-    for row in rows:
-        print(row)
+
+
+#  Updates the database with the stock and headline data
+#  company_stock_data is a list of dictionaries containing the stock data for each company for the latest trading day
+#  headlines_data is a list of dictionaries containing the headlines data for each company(tuple of headline and url)
+def update_stock_db(company_stock_data: list[dict[str, str]], headlines_data: list[dict[str, list[tuple[str, str]]]]):
+    print(f"\nConnecting to database: {DB_FILENAME}")
+    conn = sqlite3.connect(DB_FILENAME)
+    cur = conn.cursor()
+    
+    #  Creates the stocks and headlines tables in the database - if they don't already exist
+    create_tables(cur)
+    
+    #  Iterates through the company stock data 
+    for company in company_stock_data:
+        #  Inserts the stock data into the stocks table
+        symbol, latest_trading_day = insert_into_stocks_table(cur, company)
+
+        # Now that the stock data has been inserted
+        # Iterate through the headlines data and insert the headlines - for that company
+        for headline_dict in headlines_data:
+            insert_into_headlines_table(cur, symbol, latest_trading_day, headline_dict)
+ 
+    
+    conn.commit()
+    conn.close()
+    print("\nDatabase operations completed.")
     
 #  Creates the stocks and headlines tables in the database - if they don't already exist
 def create_tables(cur: sqlite3.Cursor)-> None:
@@ -148,35 +163,7 @@ def create_tables(cur: sqlite3.Cursor)-> None:
             UNIQUE(headline, latest_trading_day)
             FOREIGN KEY (symbol) REFERENCES stocks(symbol) ON DELETE CASCADE
         );
-    ''')
-
-#  Updates the database with the stock and headline data
-#  company_stock_data is a list of dictionaries containing the stock data for each company for the latest trading day
-#  headlines_data is a list of dictionaries containing the headlines data for each company(tuple of headline and url)
-def update_stock_db(company_stock_data: list[dict[str, str]], headlines_data: list[dict[str, list[tuple[str, str]]]]):
-    print(f"\nConnecting to database: {DB_FILENAME}")
-    conn = sqlite3.connect(DB_FILENAME)
-    cur = conn.cursor()
-    
-    #  Creates the stocks and headlines tables in the database - if they don't already exist
-    create_tables(cur)
-    
-    #  Iterates through the company stock data 
-    for company in company_stock_data:
-        #  Inserts the stock data into the stocks table
-        symbol, latest_trading_day = insert_into_stocks_table(cur, company)
-
-        # Now that the stock data has been inserted
-        # Iterate through the headlines data and insert the headlines - for that company
-        for headline_dict in headlines_data:
-            insert_into_headlines_table(cur, symbol, latest_trading_day, headline_dict)
- 
-    
-    conn.commit()
-    conn.close()
-    print("\nDatabase operations completed.")
-    
-    
+    ''') 
 
 #  Inserts the stock data into the stocks table - for an individual company
 #  Returns the symbol and latest trading day - as they are used in the headlines table
@@ -208,7 +195,7 @@ def insert_into_stocks_table(cur: sqlite3.Cursor, company: dict) -> tuple[str, s
     columns = list(row_data.keys())
     # Creates a string of ?'s for each column ie - "?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
     placeholders = ", ".join("?" for _ in columns)
-    # Creates a list of the values to be inserted
+    # A list of the values to be inserted
     values = [row_data[col] for col in columns]
      
     try:
@@ -226,8 +213,7 @@ def insert_into_stocks_table(cur: sqlite3.Cursor, company: dict) -> tuple[str, s
 
 #  Inserts the headlines into the headlines table - for an individual company
 def insert_into_headlines_table(cur: sqlite3.Cursor, symbol: str, latest_trading_day: str,headline_dict: dict[str, list[tuple[str, str]]]):
-     
-     #  We only insert the headlines for the current company(symbol)
+     #  We only insert the headlines for the current company(aka symbol)
     if symbol in headline_dict:
         for headline_text, headline_url in headline_dict[symbol]:
             #  Inserts the headline data into the headlines table
@@ -240,12 +226,27 @@ def insert_into_headlines_table(cur: sqlite3.Cursor, symbol: str, latest_trading
             except sqlite3.Error as e:
                 print(f"Error inserting headline: {e}")
 
-
+#  Writes the stock and headlines data to a text file 
+#  This is used to verify the data that is being inserted into the database
 def write_stock_data_to_txt_file(company_stock_data: list[dict[str, str]], headlines_data: list[dict[str, list[tuple[str, str]]]]):
     with open('stock_data.txt', 'w') as f:
         f.write(str(company_stock_data))
         f.write("\n\n")
         f.write(str(headlines_data))
+        
+#  Helper function to verify the contents of the database 
+#  by printing the contents of the stocks and headlines tables - after the data has been inserted 
+def verify_db_contents(cur: sqlite3.Cursor) -> None:
+    cur.execute("SELECT * FROM stocks")
+    rows = cur.fetchall()
+    print("\Stock table contents:")
+    for row in rows:
+        print(row)
+    print("\nHeadlines table contents:")
+    cur.execute("SELECT * FROM headlines")
+    rows = cur.fetchall()
+    for row in rows:
+        print(row)
 
 def fetch_data() -> tuple[list[dict[str, str]], list[dict[str, list[tuple[str, str]]]]]:
 
@@ -256,31 +257,225 @@ def fetch_data() -> tuple[list[dict[str, str]], list[dict[str, list[tuple[str, s
     #     print(f"Fetching data for {company} symbol:({symbol})...")
     #     company_data = fetch_stock_data(symbol)
     #     company_stock_data.append(company_data)        
-        # headline_data = get_yahoo_headlines(symbol)
-        # headlines_data.append({symbol: headline_data})
-        
-    company_stock_data = [
-        {'01. symbol': 'NVDA', '02. open': '118.0200', '03. high': '125.0900', '04. low': '116.4000', '05. price': '124.9200', '06. volume': '389091145', '07. latest trading day': '2025-02-28', '08. previous close': '120.1500', '09. change': '4.7700', '10. change percent': '3.9700%'}, 
-        {'01. symbol': 'MSFT', '02. open': '392.6550', '03. high': '397.6300', '04. low': '386.5700', '05. price': '396.9900', '06. volume': '32845658', '07. latest trading day': '2025-02-28', '08. previous close': '392.5300', '09. change': '4.4600', '10. change percent': '1.1362%'}, 
-        {'01. symbol': 'TSLA', '02. open': '279.5000', '03. high': '293.8800', '04. low': '273.6000', '05. price': '292.9800', '06. volume': '115696968', '07. latest trading day': '2025-02-28', '08. previous close': '281.9500', '09. change': '11.0300', '10. change percent': '3.9120%'}, 
-        {'01. symbol': 'GOOGL', '02. open': '168.6800', '03. high': '170.6100', '04. low': '166.7700', '05. price': '170.2800', '06. volume': '48130565', '07. latest trading day': '2025-02-28', '08. previous close': '168.5000', '09. change': '1.7800', '10. change percent': '1.0564%'}] 
+    #     headline_data = get_yahoo_headlines(symbol)
+    #     headlines_data.append({symbol: headline_data})
     
     headlines_data = [
         {'NVDA': [('IsNVIDIACorporation (NVDA) The Best Money Making Stock To Buy Now?', 'https://r.search.yahoo.com/_ylt=AwrhWNbmRMRnwBIBTyNXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125543/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fnvidia-corporation-nvda-best-money-164657872.html%3ffr%3dsycsrp_catchall/RK=2/RS=geeDjOznYxM0qUvaiOjOeD_Vwd4-'), ('Jim Cramer onNVIDIACorporation (NVDA): ‘There Are People Who Think It’s Dramatically Overvalued. And I Don’t Get That’', 'https://r.search.yahoo.com/_ylt=AwrhWNbmRMRnwBIBUyNXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125543/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fjim-cramer-nvidia-corporation-nvda-080254921.html%3ffr%3dsycsrp_catchall/RK=2/RS=WGJGNfohRkQnN9jl_ReR7R4XB88-'), ('Jim Cramer onNVIDIA(NVDA): ‘I Think You Have To Wait To See What The Numbers Are Because The Company...', 'https://r.search.yahoo.com/_ylt=AwrhWNbmRMRnwBIBVyNXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125543/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fjim-cramer-nvidia-nvda-think-115144647.html%3ffr%3dsycsrp_catchall/RK=2/RS=YIezBKqVCrU0WanZD6KCUyJWx8U-')]}, 
         {'MSFT': [('Here’s WhyMicrosoft(MSFT) Stock Returned 13% in Q4', 'https://r.search.yahoo.com/_ylt=AwrhUL3nRMRnPQIAT6BXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125544/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fwhy-microsoft-msft-stock-returned-142857739.html%3ffr%3dsycsrp_catchall/RK=2/RS=qD.mhqWeXwaYkaUQZuVOna55gkM-'), ('MicrosoftCorporation (MSFT): Among the Best Stocks to Buy According to Bill Gates', 'https://r.search.yahoo.com/_ylt=AwrhUL3nRMRnPQIAU6BXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125544/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fmicrosoft-corporation-msft-among-best-191748014.html%3ffr%3dsycsrp_catchall/RK=2/RS=ElJl.tRNPxxcJ6RcENB1O0zTMuk-'), ('MicrosoftCorporation (MSFT): A Bull Case Theory', 'https://r.search.yahoo.com/_ylt=AwrhUL3nRMRnPQIAV6BXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125544/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fmicrosoft-corporation-msft-bull-case-174225857.html%3ffr%3dsycsrp_catchall/RK=2/RS=jRIQ96zBXnjaCOqwx6nVsrroCmo-')]}, 
         {'TSLA': [('WhyTesla(TSLA) Stock Is Sinking Today', 'https://r.search.yahoo.com/_ylt=AwrFGnboRMRnSAIAJ_pXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125545/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fwhy-tesla-tsla-stock-sinking-173331602.html%3ffr%3dsycsrp_catchall/RK=2/RS=FKcIiwH2ReVSMVncIOMvzz_SDWw-'), ('Analyst:Tesla(TSLA) Still Trading At a ‘Fraction’ of Market Opportunity', 'https://r.search.yahoo.com/_ylt=AwrFGnboRMRnSAIAK_pXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125545/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fanalyst-tesla-tsla-still-trading-195358797.html%3ffr%3dsycsrp_catchall/RK=2/RS=J4I9VURTK6fgBANb8bGMmCC9Vw4-'), ('Jim Cramer onTesla, Inc. (TSLA) CEO Elon Musk: ‘There’s A Changeover That He’s Doing On The Autos’', 'https://r.search.yahoo.com/_ylt=AwrFGnboRMRnSAIAL_pXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125545/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fjim-cramer-tesla-inc-tsla-074529126.html%3ffr%3dsycsrp_catchall/RK=2/RS=T2Dn4h46A1kXc_md2nKRt9glsd8-')]}, 
         {'GOOGL': [('Alphabet (GOOGL) Reliance on International Sales: What Investors Need to Know', 'https://r.search.yahoo.com/_ylt=Awril_fpRMRnMgIAOVJXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125546/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2falphabet-googl-reliance-international-sales-141527238.html%3ffr%3dsycsrp_catchall/RK=2/RS=bhwBBIlIhCD163gddYM6JBqmiw0-'), ("CanGOOGL's Cloud Investments Push the Stock Higher in 2025?", 'https://r.search.yahoo.com/_ylt=Awril_fpRMRnMgIAQlJXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125546/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fgoogls-cloud-investments-push-stock-161300162.html%3ffr%3dsycsrp_catchall/RK=2/RS=AYinFGiT2MWC2Oi3mqFD0lXo7DY-'), ('Alphabet (GOOGL) Ascends But Remains Behind Market: Some Facts to Note', 'https://r.search.yahoo.com/_ylt=Awril_fpRMRnMgIARlJXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125546/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2falphabet-googl-ascends-remains-behind-224518632.html%3ffr%3dsycsrp_catchall/RK=2/RS=aDjGqd7D7Ig5p.g43aEB.IMpl0A-')]}]
+   
+    #   original  
+    company_stock_data = [
+        {'01. symbol': 'NVDA', '02. open': '120.5000', '03. high': '127.0000', '04. low': '119.3000', '05. price': '126.4500', '06. volume': '400000000', '07. latest trading day': '2025-03-01', '08. previous close': '121.2000', '09. change': '5.2500', '10. change percent': '4.3320%'},
+        {'01. symbol': 'MSFT', '02. open': '395.5000', '03. high': '401.2500', '04. low': '390.0000', '05. price': '400.5000', '06. volume': '33000000', '07. latest trading day': '2025-03-01', '08. previous close': '396.7500', '09. change': '3.7500', '10. change percent': '0.9450%'},
+        {'01. symbol': 'TSLA', '02. open': '285.0000', '03. high': '300.5000', '04. low': '280.1000', '05. price': '299.8000', '06. volume': '117000000', '07. latest trading day': '2025-03-01', '08. previous close': '286.5000', '09. change': '13.3000', '10. change percent': '4.6450%'},
+        {'01. symbol': 'GOOGL', '02. open': '170.0000', '03. high': '173.2500', '04. low': '168.9000', '05. price': '172.1000', '06. volume': '49000000', '07. latest trading day': '2025-03-01', '08. previous close': '169.7500', '09. change': '2.3500', '10. change percent': '1.3840%'}]
+     
+    # company_stock_data = [
+    #     {'01. symbol': 'NVDA', '02. open': '118.0200', '03. high': '125.0900', '04. low': '116.4000', '05. price': '124.9200', '06. volume': '389091145', '07. latest trading day': '2025-02-28', '08. previous close': '120.1500', '09. change': '4.7700', '10. change percent': '3.9700%'}, 
+    #     {'01. symbol': 'MSFT', '02. open': '392.6550', '03. high': '397.6300', '04. low': '386.5700', '05. price': '396.9900', '06. volume': '32845658', '07. latest trading day': '2025-02-28', '08. previous close': '392.5300', '09. change': '4.4600', '10. change percent': '1.1362%'}, 
+    #     {'01. symbol': 'TSLA', '02. open': '279.5000', '03. high': '293.8800', '04. low': '273.6000', '05. price': '292.9800', '06. volume': '115696968', '07. latest trading day': '2025-02-28', '08. previous close': '281.9500', '09. change': '11.0300', '10. change percent': '3.9120%'}, 
+    #     {'01. symbol': 'GOOGL', '02. open': '168.6800', '03. high': '170.6100', '04. low': '166.7700', '05. price': '170.2800', '06. volume': '48130565', '07. latest trading day': '2025-02-28', '08. previous close': '168.5000', '09. change': '1.7800', '10. change percent': '1.0564%'}] 
     
-    write_stock_data_to_txt_file(company_stock_data, headlines_data)
+    
+    # company_stock_data = [
+    # {'01. symbol': 'NVDA', '02. open': '121.1000', '03. high': '128.2000', '04. low': '120.3000', '05. price': '127.6000', '06. volume': '405000000', '07. latest trading day': '2025-03-02', '08. previous close': '126.4500', '09. change': '1.1500', '10. change percent': '0.9091%'},
+    # {'01. symbol': 'MSFT', '02. open': '397.8000', '03. high': '403.0000', '04. low': '392.4000', '05. price': '402.0000', '06. volume': '33500000', '07. latest trading day': '2025-03-02', '08. previous close': '400.5000', '09. change': '1.5000', '10. change percent': '0.3750%'},
+    # {'01. symbol': 'TSLA', '02. open': '287.5000', '03. high': '302.0000', '04. low': '282.3000', '05. price': '300.5000', '06. volume': '118000000', '07. latest trading day': '2025-03-02', '08. previous close': '299.8000', '09. change': '0.7000', '10. change percent': '0.2334%'},
+    # {'01. symbol': 'GOOGL', '02. open': '171.2000', '03. high': '174.5000', '04. low': '169.8000', '05. price': '173.5000', '06. volume': '49500000', '07. latest trading day': '2025-03-02', '08. previous close': '172.1000', '09. change': '1.4000', '10. change percent': '0.8139%'}]
+
+    # company_stock_data = [
+    #     {'01. symbol': 'NVDA', '02. open': '122.3000', '03. high': '129.5000', '04. low': '121.4000', '05. price': '128.7500', '06. volume': '410000000', '07. latest trading day': '2025-03-03', '08. previous close': '128.7500', '09. change': '1.2000', '10. change percent': '0.9310%'},
+    #     {'01. symbol': 'MSFT', '02. open': '402.5000', '03. high': '408.0000', '04. low': '398.0000', '05. price': '407.0000', '06. volume': '34000000', '07. latest trading day': '2025-03-03', '08. previous close': '402.0000', '09. change': '5.0000', '10. change percent': '1.2438%'},
+    #     {'01. symbol': 'TSLA', '02. open': '289.0000', '03. high': '305.0000', '04. low': '285.0000', '05. price': '303.5000', '06. volume': '119500000', '07. latest trading day': '2025-03-03', '08. previous close': '300.5000', '09. change': '3.0000', '10. change percent': '1.0000%'},
+    #     {'01. symbol': 'GOOGL', '02. open': '172.5000', '03. high': '175.8000', '04. low': '171.0000', '05. price': '175.0000', '06. volume': '50000000', '07. latest trading day': '2025-03-03', '08. previous close': '173.5000', '09. change': '1.5000', '10. change percent': '0.8633%'}]
+
     
     return (company_stock_data, headlines_data)
 
+# Displays historical stock data for a user-selected company in a formatted table.
+# Data is retrieved from the database and shows how the stock has changed over time.
+
+def tabulate_data() -> None:
+    # Colors indicate changes from previous day:
+    # Green: Increase
+    # Red: Decrease
+    # White: No change or first entry
+  
+    # Print available companies with index numbers
+    print("\nAvailable options:")
+    companies_list = list(COMPANIES.items())
+    for idx, (company, symbol) in enumerate(companies_list, 1):
+        print(f"{idx}. {company} ({symbol})")
+    print("A. All companies")
+    
+    # Get user input
+    while True:
+        choice = input("\nEnter selection number or 'A' for all (or 'q' to quit): ").strip()
+        if choice.lower() == 'q':
+            return
+        if choice.lower() == 'a':
+            symbols = list(COMPANIES.values())
+            company_name = "All Companies"
+            break
+        try:
+            idx = int(choice)
+            if 1 <= idx <= len(companies_list):
+                company_name, symbol = companies_list[idx-1]
+                symbols = [symbol]
+                break
+        except ValueError:
+            pass
+        print("Invalid selection. Please try again.")
+    
+    # Connect to database
+    conn = sqlite3.connect(DB_FILENAME)
+    cur = conn.cursor()
+    
+    # Query the database for historical data of the selected company/companies
+    try:
+        placeholders = ','.join('?' * len(symbols))
+        cur.execute(f"""
+            SELECT 
+                symbol,
+                latest_trading_day,
+                price,
+                change,
+                change_percent,
+                volume,
+                high,
+                low,
+                open,
+                previous_close
+            FROM stocks 
+            WHERE symbol IN ({placeholders})
+            ORDER BY symbol, latest_trading_day ASC
+        """, symbols)
+        
+        rows = cur.fetchall()
+        if not rows:
+            print(f"No data found for {company_name}")
+            return
+            
+        headers = [
+            'Symbol', 'Date', 'Price', 'Change', 'Change %',
+            'Volume', 'High', 'Low', 'Open', 'Prev Close'
+        ]
+        
+        table_data = []
+        prev_values = {}
+        
+        for row in rows:
+            symbol = row[0]
+            # Convert row tuple -> list so we can replace strings with colored strings
+            colored_row = list(row)
+            
+            # If it's the very first row we see for this symbol, just store & skip coloring
+            if symbol not in prev_values:
+                prev_values[symbol] = {
+                    'price': float(row[2]),
+                    'change': float(row[3]),
+                    'change_percent': float(row[4].rstrip('%')),
+                    'volume': int(row[5]),
+                    'high': float(row[6]),
+                    'low': float(row[7]),
+                    'open': float(row[8])
+                }
+                table_data.append(colored_row)
+                continue
+            
+            # Otherwise compare day vs. previous day for that symbol:
+            prev = prev_values[symbol]
+            
+            # (2) Price
+            curr_price = float(row[2])
+            if curr_price > prev['price']:
+                colored_row[2] = f"{Fore.GREEN}{row[2]}{Style.RESET_ALL}"
+            elif curr_price < prev['price']:
+                colored_row[2] = f"{Fore.RED}{row[2]}{Style.RESET_ALL}"
+            
+            # (3) Change vs. yesterday's Change
+            curr_change = float(row[3])
+            if curr_change > prev['change']:
+                colored_row[3] = f"{Fore.GREEN}{row[3]}{Style.RESET_ALL}"
+            elif curr_change < prev['change']:
+                colored_row[3] = f"{Fore.RED}{row[3]}{Style.RESET_ALL}"
+            
+            # (4) Change % vs. yesterday's Change %
+            curr_chg_pct = float(row[4].rstrip('%'))
+            if curr_chg_pct > prev['change_percent']:
+                colored_row[4] = f"{Fore.GREEN}{row[4]}{Style.RESET_ALL}"
+            elif curr_chg_pct < prev['change_percent']:
+                colored_row[4] = f"{Fore.RED}{row[4]}{Style.RESET_ALL}"
+            
+            # (5) Volume
+            curr_vol = int(row[5])
+            if curr_vol > prev['volume']:
+                colored_row[5] = f"{Fore.GREEN}{row[5]}{Style.RESET_ALL}"
+            elif curr_vol < prev['volume']:
+                colored_row[5] = f"{Fore.RED}{row[5]}{Style.RESET_ALL}"
+            
+            # (6) High
+            curr_high = float(row[6])
+            if curr_high > prev['high']:
+                colored_row[6] = f"{Fore.GREEN}{row[6]}{Style.RESET_ALL}"
+            elif curr_high < prev['high']:
+                colored_row[6] = f"{Fore.RED}{row[6]}{Style.RESET_ALL}"
+            
+            # (7) Low
+            curr_low = float(row[7])
+            if curr_low > prev['low']:
+                colored_row[7] = f"{Fore.GREEN}{row[7]}{Style.RESET_ALL}"
+            elif curr_low < prev['low']:
+                colored_row[7] = f"{Fore.RED}{row[7]}{Style.RESET_ALL}"
+            
+            # (8) Open
+            curr_open = float(row[8])
+            if curr_open > prev['open']:
+                colored_row[8] = f"{Fore.GREEN}{row[8]}{Style.RESET_ALL}"
+            elif curr_open < prev['open']:
+                colored_row[8] = f"{Fore.RED}{row[8]}{Style.RESET_ALL}"
+            
+            # Append colored row
+            table_data.append(colored_row)
+            
+            # Finally, update stored “previous” values
+            prev_values[symbol] = {
+                'price': curr_price,
+                'change': curr_change,
+                'change_percent': curr_chg_pct,
+                'volume': curr_vol,
+                'high': curr_high,
+                'low': curr_low,
+                'open': curr_open
+            }
+        
+        print(f"\nHistorical Stock Data for {company_name}:")
+        print(tabulate(table_data, headers=headers, tablefmt='grid'))
+        
+    except sqlite3.Error as e:
+        print(f"Error querying database: {e}")
+    finally:
+        conn.close()
+
+
+
 def main():
     (company_stock_data, headlines_data) = fetch_data()
-
-    print("Starting database update...")
+    
+    # write_stock_data_to_txt_file(company_stock_data, headlines_data)
+  
+    
+    print("\nStarting database update...")
     update_stock_db(company_stock_data, headlines_data) 
     # verify_db_contents()
+    
+    
+    # Display the stock data in a formatted table
+    # Display historical data for user-selected company
+    tabulate_data()
     
 if __name__ == "__main__":
     main()
