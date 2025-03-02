@@ -295,31 +295,24 @@ def fetch_data() -> tuple[list[dict[str, str]], list[dict[str, list[tuple[str, s
     
     return (company_stock_data, headlines_data)
 
-# Displays historical stock data for a user-selected company in a formatted table.
-# Data is retrieved from the database and shows how the stock has changed over time.
 
+
+# Helper function to color table cells based on comparison with its previous days value.
+# Returns a Colored string if value changed, original string if unchanged
 def color_numeric_cell_value(curr_val: float, prev_val: float, value_str: str) -> str:
-    """Helper function to color numeric values based on comparison with previous value.
-    
-    Args:
-        curr_val: Current numeric value
-        prev_val: Previous numeric value
-        value_str: String representation of the value to color
-        
-    Returns:
-        Colored string if value changed, original string if unchanged
-    """
+    # If current value is greater than previous value, color green
     if curr_val > prev_val:
         return f"{Fore.GREEN}{value_str}{Style.RESET_ALL}"
+    # If current value is less than previous value, color red
     elif curr_val < prev_val:
         return f"{Fore.RED}{value_str}{Style.RESET_ALL}"
-    return value_str
+    # If current value is equal to previous value, color white - ie no change, or first entry
+    else:
+        return f"{Fore.WHITE}{value_str}{Style.RESET_ALL}"
 
+# Displays historical stock data for a user-selected company in a formatted table.
+# Data is retrieved from the database and shows how the stock has changed over time.
 def tabulate_data() -> None:
-    # Colors indicate changes from previous day:
-    # Green: Increase
-    # Red: Decrease
-    # White: No change or first entry
   
     # Print available companies with index numbers
     print("\nAvailable options:")
@@ -385,6 +378,13 @@ def tabulate_data() -> None:
         prev_values = {}
         current_symbol = None
         
+ 
+        print("Colors indicate changes from previous day:")
+        print(f"{Fore.GREEN}Green: Increase{Style.RESET_ALL}") 
+        print(f"{Fore.RED}Red: Decrease{Style.RESET_ALL}")
+        print(f"{Fore.WHITE}White: No change or first entry{Style.RESET_ALL}")
+        input("Press any key to continue...")
+          
         for row in rows:
             symbol = row[0]
             

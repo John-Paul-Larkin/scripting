@@ -1,0 +1,32 @@
+
+
+fetch_stock_data Function:
+
+This function retrieves previous dat stock market data from the Alpha Vantage API for specific companies. 
+The data includes basic Stock Information in json format.
+The function uses Alpha Vantage's "GLOBAL_QUOTE" endpoint.
+This endpoint returns the latest price and volume information for a particular company.
+The data is returned as a structured dictionary with standardised keys (e.g., '01. symbol', '02. open', etc.).
+
+Symbol (e.g., NVDA, MSFT, TSLA, GOOGL)
+Latest Trading Day
+Current Price
+Opening Price
+High and Low prices for the day
+Trading Volume
+Performance Metrics:
+Previous Close Price
+Price Change (absolute value)
+Change Percentage
+
+
+get_yahoo_headlines Function:
+
+This function performs web scraping on Yahoo Finance to gather news headlines related to specific companies. 
+For each stock symbol, it collects two piece of data.
+The news headline, which is the text content of the headline related to the company.
+The articles URL, which is the corresponding link to the full article.
+BeautifulSoup is used to parse the HTML
+Implements chrome browser headers to avoid anti-bot measures
+Specifically targets articles with the class "title u-trunc3" 
+Returns data as a list of tuples, where each tuple contains (headline, url)
