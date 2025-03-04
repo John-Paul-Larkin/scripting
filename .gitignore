@@ -24,8 +24,8 @@ build/
 .env
 
 # Database files
-*.db
-*.sqlite3
+# *.db
+# *.sqlite3
 
 # CSV files (if they contain data that shouldn't be in source control)
 # *.csv 
