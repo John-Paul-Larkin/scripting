@@ -3,12 +3,17 @@
 #  Assignment 2
 # 1/3/2025
 
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import matplotlib.patches as mpatches
+from datetime import datetime
 import os
 import sqlite3
+import pandas as pd
+# from matplotlib import pyplot as plt
 import requests
 from tabulate import tabulate
 from dotenv import load_dotenv
-# from tabulate import tabulate
 from bs4 import BeautifulSoup
 from colorama import Fore, Style
 
@@ -374,22 +379,23 @@ def tabulate_data() -> None:
   
     # Print the list of companies and get the user's selection
     user_option = get_user_option()
-    if user_option is 'quit':
+    if user_option == 'quit':
         return
-    elif user_option is 'all':
+    elif user_option == 'all':
         # Symbols can be a list with a single company, or a list of all companies
         symbols = list(COMPANIES.values())
     else:
         symbols = [COMPANIES[user_option]]
-    
-        
+         
     # Create headers for the table
     headers = [
         'Symbol', 'Date', 'Price', 'Change', 'Change %',
         'Volume', 'High', 'Low', 'Open', 'Prev Close'
     ]
     
+    # table_data contains the data to be printed by tabulate
     table_data = []
+    # prev_values contains the comparison value
     prev_values = {}
     current_symbol = None
     
@@ -484,11 +490,152 @@ def tabulate_data() -> None:
     print(tabulate(table_data, headers=headers, tablefmt='grid'))
     
 
+def visualise_data():
+    # Print the list of companies and get the user's selection
+    user_option = get_user_option()
+    if user_option == 'quit':
+        return
+    elif user_option == 'all':
+        # Symbols can be a list with a single company, or a list of all companies
+        symbols = list(COMPANIES.values())
+    else:
+        symbols = [COMPANIES[user_option]]
+        
+    #  query the database for the historical stock data
+    rows = fetch_historical_stock_data(symbols)
+    
+     # Dictionary to store data by symbol
+    data_by_symbol = {}
+
+    # Parse the data, group by symbol
+    for row in rows:
+        symbol = row[0]
+        trading_day_str = row[1]
+        price_str = row[2]
+        
+        # Convert to date and float
+        trading_day = datetime.strptime(trading_day_str, '%Y-%m-%d').date()
+        price = float(price_str)
+
+        if symbol not in data_by_symbol:
+            data_by_symbol[symbol] = []
+        data_by_symbol[symbol].append((trading_day, price))
+    
+    # Sort each symbol's data by date
+    for symbol in data_by_symbol:
+        data_by_symbol[symbol].sort(key=lambda x: x[0])  # Sort by the date
+    
+    # Create the plot
+    plt.figure(figsize=(10, 6))
+    
+    for symbol, data_points in data_by_symbol.items():
+        # Separate out the dates and prices for plotting
+        dates = [dp[0] for dp in data_points]
+        prices = [dp[1] for dp in data_points]
+
+        # Plot one line per symbol
+        plt.plot(dates, prices, label=symbol)
+
+    plt.title("Stock Prices Over Time")
+    plt.xlabel("Date")
+    plt.ylabel("Price")
+    plt.legend()
+    plt.gcf().autofmt_xdate()  # Rotate date labels for better readability
+
+    # Show the plot
+    plt.show()
+    
+    
+def visualise_data2():
+    # Print the list of companies and get the user's selection
+    user_option = get_user_option()
+    if user_option == 'quit':
+        return
+    elif user_option == 'all':
+        # Symbols can be a list with a single company, or a list of all companies
+        symbols = list(COMPANIES.values())
+    else:
+        symbols = [COMPANIES[user_option]]
+        
+    #  query the database for the historical stock data
+    rows = fetch_historical_stock_data(symbols)
+    
+    columns = [
+        "ticker", "date", "close", "change", "percent_change", "volume",
+        "high", "low", "open", "prev_close"
+    ]
+
+    # Convert rows to a DataFrame
+    df = pd.DataFrame(rows, columns=columns)
+    
+    # Convert date to datetime
+    df['date'] = pd.to_datetime(df['date'])
+
+    # Convert numeric columns
+    numeric_cols = ["close", "change", "volume", "high", "low", "open", "prev_close"]
+    for col in numeric_cols:
+        df[col] = pd.to_numeric(df[col])
+
+    # Get unique tickers
+    tickers = df['ticker'].unique()
+    n_tickers = len(tickers)
+
+    # Create subplots – one row per ticker
+    fig, axs = plt.subplots(n_tickers, 1, figsize=(10, 4 * n_tickers))
+    if n_tickers == 1:
+        axs = [axs]  # Make sure axs is iterable if there's only one ticker
+
+    # Create legend handles (green for up, red for down)
+    up_patch = mpatches.Patch(color='green', label='Close >= Open')
+    down_patch = mpatches.Patch(color='red', label='Close < Open')
+
+    # Plot data for each ticker
+    for ax, ticker in zip(axs, tickers):
+        df_ticker = df[df['ticker'] == ticker].sort_values('date')
+
+        for _, row in df_ticker.iterrows():
+            day = row['date']
+            op = row['open']
+            cl = row['close']
+            hi = row['high']
+            lo = row['low']
+
+            # Choose color: green if close >= open, otherwise red
+            color = 'green' if cl >= op else 'red'
+
+            # Draw the high-low line
+            ax.plot([day, day], [lo, hi], color='black', linewidth=1)
+
+            # Draw the candlestick body
+            ax.bar(day, cl - op, bottom=min(op, cl), width=0.6, color=color, align='center')
+
+        # Configure the subplot
+        ax.set_title(f'Candlestick Chart for {ticker}', fontsize=12)
+        ax.set_ylabel('Price')
+        ax.grid(True)
+
+        # Format the x-axis as dates
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+        ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+
+        # Rotate date labels for readability
+        for label in ax.get_xticklabels():
+            label.set_rotation(45)
+            label.set_horizontalalignment('right')
+
+        # Add a legend explaining the colors
+        ax.legend(handles=[up_patch, down_patch], loc='best')
+
+    # Tighten the layout to prevent overlapping labels
+    plt.tight_layout()
+    plt.show()
+    
+    
 
 def main():
-    (company_stock_data, headlines_data) = fetch_data()
-    print("\nStarting database update...")
-    update_stock_db(company_stock_data, headlines_data) 
+    # (company_stock_data, headlines_data) = fetch_data()
+    # print("\nStarting database update...")
+    # update_stock_db(company_stock_data, headlines_data) 
     
     # This functions are commented out as they are only used in development
     # write_stock_data_to_txt_file(company_stock_data, headlines_data)
@@ -496,7 +643,10 @@ def main():
     
     # Display the stock data in a formatted table
     # Display historical data for user-selected company
-    tabulate_data()
+    # tabulate_data()
+    
+    
+    visualise_data2()
     
 if __name__ == "__main__":
     main()
