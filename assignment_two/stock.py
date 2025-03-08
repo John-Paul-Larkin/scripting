@@ -296,56 +296,39 @@ def fetch_data() -> tuple[list[dict[str, str]], list[dict[str, list[tuple[str, s
     return (company_stock_data, headlines_data)
 
 
-
-# Helper function to color table cells based on comparison with its previous days value.
-# Returns a Colored string if value changed, original string if unchanged
-def color_numeric_cell_value(curr_val: float, prev_val: float, value_str: str) -> str:
-    # If current value is greater than previous value, color green
-    if curr_val > prev_val:
-        return f"{Fore.GREEN}{value_str}{Style.RESET_ALL}"
-    # If current value is less than previous value, color red
-    elif curr_val < prev_val:
-        return f"{Fore.RED}{value_str}{Style.RESET_ALL}"
-    # If current value is equal to previous value, color white - ie no change, or first entry
-    else:
-        return f"{Fore.WHITE}{value_str}{Style.RESET_ALL}"
-
-# Displays historical stock data for a user-selected company in a formatted table.
-# Data is retrieved from the database and shows how the stock has changed over time.
-def tabulate_data() -> None:
-  
-    # Print available companies with index numbers
+# Displays a list of companies and their symbols to the user.
+# Returns the user's selection as a company name.
+def get_user_option() -> str:
+    # Create a list of companies from the COMPANIES dictionary keys
+    companies_list = list(COMPANIES.keys())
+    
+    # Print available companies with index numbers and their symbols
     print("\nAvailable options:")
-    companies_list = list(COMPANIES.items())
-    for idx, (company, symbol) in enumerate(companies_list, 1):
-        print(f"{idx}. {company} ({symbol})")
+    # Start at index 1, rather than 0
+    for idx, company in enumerate(companies_list, 1):
+        print(f"{idx}. {company} ({COMPANIES[company]})")
     print("A. All companies")
     
     # Get user input
     while True:
-        choice = input("\nEnter selection number or 'A' for all (or 'q' to quit): ").strip()
+        choice = input("\nEnter selection number or 'A' for all (or 'Q' to quit): ").strip()
         if choice.lower() == 'q':
-            return
-        if choice.lower() == 'a':
-            symbols = list(COMPANIES.values())
-            company_name = "All Companies"
-            break
-        try:
-            idx = int(choice)
-            if 1 <= idx <= len(companies_list):
-                company_name, symbol = companies_list[idx-1]
-                symbols = [symbol]
-                break
-        except ValueError:
-            pass
-        print("Invalid selection. Please try again.")
-    
-    # Connect to database
+            return 'quit'
+        elif choice.lower() == 'a':
+            return 'all'
+        elif choice.isdigit() and 0 < int(choice) <= len(companies_list):
+            return companies_list[int(choice) - 1]
+        else:
+            print("Invalid selection. Please try again.")
+
+# Helper to fetch historical stock data for given company symbols from the database. 
+def fetch_historical_stock_data(symbols: list[str]) -> list[tuple]:
+    # Symbols can be a list with a single company, or a list of all companies
     conn = sqlite3.connect(DB_FILENAME)
     cur = conn.cursor()
-    
-    # Query the database for historical data of the selected company/companies
+
     try:
+        # Create a comma-separated string of placeholders for the query ie - "?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
         placeholders = ','.join('?' * len(symbols))
         cur.execute(f"""
             SELECT 
@@ -364,118 +347,152 @@ def tabulate_data() -> None:
             ORDER BY symbol, latest_trading_day ASC
         """, symbols)
         
-        rows = cur.fetchall()
-        if not rows:
-            print(f"No data found for {company_name}")
-            return
-            
-        headers = [
-            'Symbol', 'Date', 'Price', 'Change', 'Change %',
-            'Volume', 'High', 'Low', 'Open', 'Prev Close'
-        ]
-        
-        table_data = []
-        prev_values = {}
-        current_symbol = None
-        
- 
-        print("Colors indicate changes from previous day:")
-        print(f"{Fore.GREEN}Green: Increase{Style.RESET_ALL}") 
-        print(f"{Fore.RED}Red: Decrease{Style.RESET_ALL}")
-        print(f"{Fore.WHITE}White: No change or first entry{Style.RESET_ALL}")
-        input("Press any key to continue...")
-          
-        for row in rows:
-            symbol = row[0]
-            
-            # Add empty row when switching to a new company
-            if current_symbol is not None and symbol != current_symbol:
-                table_data.append([''] * len(headers))  # Add empty row
-                
-            current_symbol = symbol
-            
-            # Convert row tuple -> list so we can replace strings with colored strings
-            colored_row = list(row)
-            
-            # If it's the very first row we see for this symbol, just store & skip coloring
-            if symbol not in prev_values:
-                prev_values[symbol] = {
-                    'price': float(row[2]),
-                    'change': float(row[3]),
-                    'change_percent': float(row[4].rstrip('%')),
-                    'volume': int(row[5]),
-                    'high': float(row[6]),
-                    'low': float(row[7]),
-                    'open': float(row[8])
-                }
-                table_data.append(colored_row)
-                continue
-            
-            # Otherwise compare day vs. previous day for that symbol:
-            prev = prev_values[symbol]
-            
-            # (2) Price
-            curr_price = float(row[2])
-            colored_row[2] = color_numeric_cell_value(curr_price, prev['price'], row[2])
-            
-            # (3) Change vs. yesterday's Change
-            curr_change = float(row[3])
-            colored_row[3] = color_numeric_cell_value(curr_change, prev['change'], row[3])
-            
-            # (4) Change % vs. yesterday's Change %
-            curr_chg_pct = float(row[4].rstrip('%'))
-            colored_row[4] = color_numeric_cell_value(curr_chg_pct, prev['change_percent'], row[4])
-            
-            # (5) Volume
-            curr_vol = int(row[5])
-            colored_row[5] = color_numeric_cell_value(curr_vol, prev['volume'], row[5])
-            
-            # (6) High
-            curr_high = float(row[6])
-            colored_row[6] = color_numeric_cell_value(curr_high, prev['high'], row[6])
-            
-            # (7) Low
-            curr_low = float(row[7])
-            colored_row[7] = color_numeric_cell_value(curr_low, prev['low'], row[7])
-            
-            # (8) Open
-            curr_open = float(row[8])
-            colored_row[8] = color_numeric_cell_value(curr_open, prev['open'], row[8])
-            
-            # Append colored row
-            table_data.append(colored_row)
-            
-            # Finally, update stored "previous" values
-            prev_values[symbol] = {
-                'price': curr_price,
-                'change': curr_change,
-                'change_percent': curr_chg_pct,
-                'volume': curr_vol,
-                'high': curr_high,
-                'low': curr_low,
-                'open': curr_open
-            }
-        
-        print(f"\nHistorical Stock Data for {company_name}:")
-        print(tabulate(table_data, headers=headers, tablefmt='grid'))
+        return cur.fetchall()
         
     except sqlite3.Error as e:
         print(f"Error querying database: {e}")
+        return []
     finally:
         conn.close()
 
+# Helper function to color table cells based on comparison with its previous days value.
+# Returns a green/red string if value changed, white string if unchanged
+def color_numeric_cell_value(curr_val: float, prev_val: float, value_str: str) -> str:
+    # If current value is greater than previous value, color green
+    if curr_val > prev_val:
+        return f"{Fore.GREEN}{value_str}{Style.RESET_ALL}"
+    # If current value is less than previous value, color red
+    elif curr_val < prev_val:
+        return f"{Fore.RED}{value_str}{Style.RESET_ALL}"
+    # If current value is equal to previous value, color white - ie no change, or first entry
+    else:
+        return f"{Fore.WHITE}{value_str}{Style.RESET_ALL}"
+
+# Displays historical stock data for a user-selected company in a formatted table.
+# Data is retrieved from the database and shows how the stock has changed over time.
+def tabulate_data() -> None:
+  
+    # Print the list of companies and get the user's selection
+    user_option = get_user_option()
+    if user_option is 'quit':
+        return
+    elif user_option is 'all':
+        # Symbols can be a list with a single company, or a list of all companies
+        symbols = list(COMPANIES.values())
+    else:
+        symbols = [COMPANIES[user_option]]
+    
+        
+    # Create headers for the table
+    headers = [
+        'Symbol', 'Date', 'Price', 'Change', 'Change %',
+        'Volume', 'High', 'Low', 'Open', 'Prev Close'
+    ]
+    
+    table_data = []
+    prev_values = {}
+    current_symbol = None
+    
+    print("Colors indicate changes from previous day:")
+    print(f"{Fore.GREEN}Green: Increase{Style.RESET_ALL}") 
+    print(f"{Fore.RED}Red: Decrease{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}White: No change or first entry{Style.RESET_ALL}")
+    input("Press any key to continue...")
+    
+    #  query the database for the historical stock data
+    rows = fetch_historical_stock_data(symbols)
+    if not rows:
+        print(f"No data found")
+        return
+      
+    #  iterate through the rows and add the data to the table
+    for row in rows:
+        symbol = row[0]
+        
+        # Add empty row when switching to a new company
+        # Simply for clarity in the table, when printing multiple companies
+        if current_symbol is not None and symbol != current_symbol:
+            table_data.append([''] * len(headers))  # Add empty row
+            
+        current_symbol = symbol
+        
+        # Convert row tuple to a list so we can replace strings with colored strings
+        colored_row = list(row)
+        
+        # If it's the very first row we see for this symbol, just store & skip coloring
+        if symbol not in prev_values:
+            prev_values[symbol] = {
+                'price': float(row[2]),
+                'change': float(row[3]),
+                # remove the % sign and convert to float
+                'change_percent': float(row[4].rstrip('%')),
+                'volume': int(row[5]),
+                'high': float(row[6]),
+                'low': float(row[7]),
+                'open': float(row[8])
+            }
+            table_data.append(colored_row)
+            #  continue to the next row - we don't need to compare the first row to itself
+            continue
+        
+        # Otherwise compare day vs. previous day for that symbol:
+        prev = prev_values[symbol]
+        
+        # (2) Price
+        curr_price = float(row[2])
+        colored_row[2] = color_numeric_cell_value(curr_price, prev['price'], row[2])
+        
+        # (3) Change vs. yesterday's Change
+        curr_change = float(row[3])
+        colored_row[3] = color_numeric_cell_value(curr_change, prev['change'], row[3])
+        
+        # (4) Change % vs. yesterday's Change %
+        curr_chg_pct = float(row[4].rstrip('%'))
+        colored_row[4] = color_numeric_cell_value(curr_chg_pct, prev['change_percent'], row[4])
+        
+        # (5) Volume
+        curr_vol = int(row[5])
+        colored_row[5] = color_numeric_cell_value(curr_vol, prev['volume'], row[5])
+        
+        # (6) High
+        curr_high = float(row[6])
+        colored_row[6] = color_numeric_cell_value(curr_high, prev['high'], row[6])
+        
+        # (7) Low
+        curr_low = float(row[7])
+        colored_row[7] = color_numeric_cell_value(curr_low, prev['low'], row[7])
+        
+        # (8) Open
+        curr_open = float(row[8])
+        colored_row[8] = color_numeric_cell_value(curr_open, prev['open'], row[8])
+        
+        # Append colored row
+        table_data.append(colored_row)
+        
+        # update stored previous values - used for comparing to the next row
+        prev_values[symbol] = {
+            'price': curr_price,
+            'change': curr_change,
+            'change_percent': curr_chg_pct,
+            'volume': curr_vol,
+            'high': curr_high,
+            'low': curr_low,
+            'open': curr_open
+        }
+    
+    print(f"\nHistorical Stock Data for {symbols}:")
+    print(tabulate(table_data, headers=headers, tablefmt='grid'))
+    
 
 
 def main():
     (company_stock_data, headlines_data) = fetch_data()
-    
-    # write_stock_data_to_txt_file(company_stock_data, headlines_data)
-  
-    
     print("\nStarting database update...")
     update_stock_db(company_stock_data, headlines_data) 
-    # verify_db_contents()
     
+    # This functions are commented out as they are only used in development
+    # write_stock_data_to_txt_file(company_stock_data, headlines_data)
+    # verify_db_contents()
     
     # Display the stock data in a formatted table
     # Display historical data for user-selected company
