@@ -525,10 +525,13 @@ def visualise_data():
 
     symbols = COMPANIES.values()
     symbol_count = len(symbols)
+    #  Calculate the number of days in the dataset - Newest date less the oldest date
+    #  This is used to determine the width of the chart
+    days_count = (dataframe['date'].max() - dataframe['date'].min()).days
 
 
     # Create subplots – one row per symbol
-    fig, axs = plt.subplots(symbol_count, 1, figsize=(10, 4 * symbol_count))
+    fig, axs = plt.subplots(symbol_count, 1, figsize=(days_count * 2, 4 * symbol_count))
     if symbol_count == 1:
         # Make sure axs is iterable if there's only one symbol
         # There may be multiiple symobls if the user selects all
