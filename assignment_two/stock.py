@@ -580,7 +580,8 @@ def visualise_data():
                     #  Draw the candlestick body for high and low
             #  -7 is the offset to the left to align to the left of the open-close candlestick 
             ax.bar(day + pd.Timedelta(hours=-7), high - low, bottom=low, width=0.3, color='yellow', align='edge')
-            # Annotate with high and low
+            
+            # Annotate yellow bar with high and low
             ax.text(day, high, f"High: {high:.2f}", ha='right', 
                     va= 'bottom', fontsize=8, color='black')
             
