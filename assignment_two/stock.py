@@ -265,18 +265,18 @@ def fetch_data() -> tuple[list[dict[str, str]], list[dict[str, list[tuple[str, s
     #     headline_data = get_yahoo_headlines(symbol)
     #     headlines_data.append({symbol: headline_data})
     
-    headlines_data = [
-        {'NVDA': [('IsNVIDIACorporation (NVDA) The Best Money Making Stock To Buy Now?', 'https://r.search.yahoo.com/_ylt=AwrhWNbmRMRnwBIBTyNXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125543/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fnvidia-corporation-nvda-best-money-164657872.html%3ffr%3dsycsrp_catchall/RK=2/RS=geeDjOznYxM0qUvaiOjOeD_Vwd4-'), ('Jim Cramer onNVIDIACorporation (NVDA): ‘There Are People Who Think It’s Dramatically Overvalued. And I Don’t Get That’', 'https://r.search.yahoo.com/_ylt=AwrhWNbmRMRnwBIBUyNXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125543/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fjim-cramer-nvidia-corporation-nvda-080254921.html%3ffr%3dsycsrp_catchall/RK=2/RS=WGJGNfohRkQnN9jl_ReR7R4XB88-'), ('Jim Cramer onNVIDIA(NVDA): ‘I Think You Have To Wait To See What The Numbers Are Because The Company...', 'https://r.search.yahoo.com/_ylt=AwrhWNbmRMRnwBIBVyNXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125543/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fjim-cramer-nvidia-nvda-think-115144647.html%3ffr%3dsycsrp_catchall/RK=2/RS=YIezBKqVCrU0WanZD6KCUyJWx8U-')]}, 
-        {'MSFT': [('Here’s WhyMicrosoft(MSFT) Stock Returned 13% in Q4', 'https://r.search.yahoo.com/_ylt=AwrhUL3nRMRnPQIAT6BXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125544/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fwhy-microsoft-msft-stock-returned-142857739.html%3ffr%3dsycsrp_catchall/RK=2/RS=qD.mhqWeXwaYkaUQZuVOna55gkM-'), ('MicrosoftCorporation (MSFT): Among the Best Stocks to Buy According to Bill Gates', 'https://r.search.yahoo.com/_ylt=AwrhUL3nRMRnPQIAU6BXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125544/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fmicrosoft-corporation-msft-among-best-191748014.html%3ffr%3dsycsrp_catchall/RK=2/RS=ElJl.tRNPxxcJ6RcENB1O0zTMuk-'), ('MicrosoftCorporation (MSFT): A Bull Case Theory', 'https://r.search.yahoo.com/_ylt=AwrhUL3nRMRnPQIAV6BXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125544/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fmicrosoft-corporation-msft-bull-case-174225857.html%3ffr%3dsycsrp_catchall/RK=2/RS=jRIQ96zBXnjaCOqwx6nVsrroCmo-')]}, 
-        {'TSLA': [('WhyTesla(TSLA) Stock Is Sinking Today', 'https://r.search.yahoo.com/_ylt=AwrFGnboRMRnSAIAJ_pXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125545/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fwhy-tesla-tsla-stock-sinking-173331602.html%3ffr%3dsycsrp_catchall/RK=2/RS=FKcIiwH2ReVSMVncIOMvzz_SDWw-'), ('Analyst:Tesla(TSLA) Still Trading At a ‘Fraction’ of Market Opportunity', 'https://r.search.yahoo.com/_ylt=AwrFGnboRMRnSAIAK_pXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125545/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fanalyst-tesla-tsla-still-trading-195358797.html%3ffr%3dsycsrp_catchall/RK=2/RS=J4I9VURTK6fgBANb8bGMmCC9Vw4-'), ('Jim Cramer onTesla, Inc. (TSLA) CEO Elon Musk: ‘There’s A Changeover That He’s Doing On The Autos’', 'https://r.search.yahoo.com/_ylt=AwrFGnboRMRnSAIAL_pXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125545/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fjim-cramer-tesla-inc-tsla-074529126.html%3ffr%3dsycsrp_catchall/RK=2/RS=T2Dn4h46A1kXc_md2nKRt9glsd8-')]}, 
-        {'GOOGL': [('Alphabet (GOOGL) Reliance on International Sales: What Investors Need to Know', 'https://r.search.yahoo.com/_ylt=Awril_fpRMRnMgIAOVJXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125546/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2falphabet-googl-reliance-international-sales-141527238.html%3ffr%3dsycsrp_catchall/RK=2/RS=bhwBBIlIhCD163gddYM6JBqmiw0-'), ("CanGOOGL's Cloud Investments Push the Stock Higher in 2025?", 'https://r.search.yahoo.com/_ylt=Awril_fpRMRnMgIAQlJXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125546/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fgoogls-cloud-investments-push-stock-161300162.html%3ffr%3dsycsrp_catchall/RK=2/RS=AYinFGiT2MWC2Oi3mqFD0lXo7DY-'), ('Alphabet (GOOGL) Ascends But Remains Behind Market: Some Facts to Note', 'https://r.search.yahoo.com/_ylt=Awril_fpRMRnMgIARlJXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125546/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2falphabet-googl-ascends-remains-behind-224518632.html%3ffr%3dsycsrp_catchall/RK=2/RS=aDjGqd7D7Ig5p.g43aEB.IMpl0A-')]}]
+    # headlines_data = [
+    #     {'NVDA': [('IsNVIDIACorporation (NVDA) The Best Money Making Stock To Buy Now?', 'https://r.search.yahoo.com/_ylt=AwrhWNbmRMRnwBIBTyNXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125543/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fnvidia-corporation-nvda-best-money-164657872.html%3ffr%3dsycsrp_catchall/RK=2/RS=geeDjOznYxM0qUvaiOjOeD_Vwd4-'), ('Jim Cramer onNVIDIACorporation (NVDA): ‘There Are People Who Think It’s Dramatically Overvalued. And I Don’t Get That’', 'https://r.search.yahoo.com/_ylt=AwrhWNbmRMRnwBIBUyNXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125543/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fjim-cramer-nvidia-corporation-nvda-080254921.html%3ffr%3dsycsrp_catchall/RK=2/RS=WGJGNfohRkQnN9jl_ReR7R4XB88-'), ('Jim Cramer onNVIDIA(NVDA): ‘I Think You Have To Wait To See What The Numbers Are Because The Company...', 'https://r.search.yahoo.com/_ylt=AwrhWNbmRMRnwBIBVyNXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125543/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fjim-cramer-nvidia-nvda-think-115144647.html%3ffr%3dsycsrp_catchall/RK=2/RS=YIezBKqVCrU0WanZD6KCUyJWx8U-')]}, 
+    #     {'MSFT': [('Here’s WhyMicrosoft(MSFT) Stock Returned 13% in Q4', 'https://r.search.yahoo.com/_ylt=AwrhUL3nRMRnPQIAT6BXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125544/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fwhy-microsoft-msft-stock-returned-142857739.html%3ffr%3dsycsrp_catchall/RK=2/RS=qD.mhqWeXwaYkaUQZuVOna55gkM-'), ('MicrosoftCorporation (MSFT): Among the Best Stocks to Buy According to Bill Gates', 'https://r.search.yahoo.com/_ylt=AwrhUL3nRMRnPQIAU6BXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125544/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fmicrosoft-corporation-msft-among-best-191748014.html%3ffr%3dsycsrp_catchall/RK=2/RS=ElJl.tRNPxxcJ6RcENB1O0zTMuk-'), ('MicrosoftCorporation (MSFT): A Bull Case Theory', 'https://r.search.yahoo.com/_ylt=AwrhUL3nRMRnPQIAV6BXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125544/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fmicrosoft-corporation-msft-bull-case-174225857.html%3ffr%3dsycsrp_catchall/RK=2/RS=jRIQ96zBXnjaCOqwx6nVsrroCmo-')]}, 
+    #     {'TSLA': [('WhyTesla(TSLA) Stock Is Sinking Today', 'https://r.search.yahoo.com/_ylt=AwrFGnboRMRnSAIAJ_pXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125545/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fwhy-tesla-tsla-stock-sinking-173331602.html%3ffr%3dsycsrp_catchall/RK=2/RS=FKcIiwH2ReVSMVncIOMvzz_SDWw-'), ('Analyst:Tesla(TSLA) Still Trading At a ‘Fraction’ of Market Opportunity', 'https://r.search.yahoo.com/_ylt=AwrFGnboRMRnSAIAK_pXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125545/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fanalyst-tesla-tsla-still-trading-195358797.html%3ffr%3dsycsrp_catchall/RK=2/RS=J4I9VURTK6fgBANb8bGMmCC9Vw4-'), ('Jim Cramer onTesla, Inc. (TSLA) CEO Elon Musk: ‘There’s A Changeover That He’s Doing On The Autos’', 'https://r.search.yahoo.com/_ylt=AwrFGnboRMRnSAIAL_pXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125545/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fjim-cramer-tesla-inc-tsla-074529126.html%3ffr%3dsycsrp_catchall/RK=2/RS=T2Dn4h46A1kXc_md2nKRt9glsd8-')]}, 
+    #     {'GOOGL': [('Alphabet (GOOGL) Reliance on International Sales: What Investors Need to Know', 'https://r.search.yahoo.com/_ylt=Awril_fpRMRnMgIAOVJXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125546/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2falphabet-googl-reliance-international-sales-141527238.html%3ffr%3dsycsrp_catchall/RK=2/RS=bhwBBIlIhCD163gddYM6JBqmiw0-'), ("CanGOOGL's Cloud Investments Push the Stock Higher in 2025?", 'https://r.search.yahoo.com/_ylt=Awril_fpRMRnMgIAQlJXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125546/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fgoogls-cloud-investments-push-stock-161300162.html%3ffr%3dsycsrp_catchall/RK=2/RS=AYinFGiT2MWC2Oi3mqFD0lXo7DY-'), ('Alphabet (GOOGL) Ascends But Remains Behind Market: Some Facts to Note', 'https://r.search.yahoo.com/_ylt=Awril_fpRMRnMgIARlJXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125546/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2falphabet-googl-ascends-remains-behind-224518632.html%3ffr%3dsycsrp_catchall/RK=2/RS=aDjGqd7D7Ig5p.g43aEB.IMpl0A-')]}]
    
-    #   original  
-    company_stock_data = [
-        {'01. symbol': 'NVDA', '02. open': '120.5000', '03. high': '127.0000', '04. low': '119.3000', '05. price': '126.4500', '06. volume': '400000000', '07. latest trading day': '2025-03-01', '08. previous close': '121.2000', '09. change': '5.2500', '10. change percent': '4.3320%'},
-        {'01. symbol': 'MSFT', '02. open': '395.5000', '03. high': '401.2500', '04. low': '390.0000', '05. price': '400.5000', '06. volume': '33000000', '07. latest trading day': '2025-03-01', '08. previous close': '396.7500', '09. change': '3.7500', '10. change percent': '0.9450%'},
-        {'01. symbol': 'TSLA', '02. open': '285.0000', '03. high': '300.5000', '04. low': '280.1000', '05. price': '299.8000', '06. volume': '117000000', '07. latest trading day': '2025-03-01', '08. previous close': '286.5000', '09. change': '13.3000', '10. change percent': '4.6450%'},
-        {'01. symbol': 'GOOGL', '02. open': '170.0000', '03. high': '173.2500', '04. low': '168.9000', '05. price': '172.1000', '06. volume': '49000000', '07. latest trading day': '2025-03-01', '08. previous close': '169.7500', '09. change': '2.3500', '10. change percent': '1.3840%'}]
+    # #   original  
+    # company_stock_data = [
+    #     {'01. symbol': 'NVDA', '02. open': '120.5000', '03. high': '127.0000', '04. low': '119.3000', '05. price': '126.4500', '06. volume': '400000000', '07. latest trading day': '2025-03-01', '08. previous close': '121.2000', '09. change': '5.2500', '10. change percent': '4.3320%'},
+    #     {'01. symbol': 'MSFT', '02. open': '395.5000', '03. high': '401.2500', '04. low': '390.0000', '05. price': '400.5000', '06. volume': '33000000', '07. latest trading day': '2025-03-01', '08. previous close': '396.7500', '09. change': '3.7500', '10. change percent': '0.9450%'},
+    #     {'01. symbol': 'TSLA', '02. open': '285.0000', '03. high': '300.5000', '04. low': '280.1000', '05. price': '299.8000', '06. volume': '117000000', '07. latest trading day': '2025-03-01', '08. previous close': '286.5000', '09. change': '13.3000', '10. change percent': '4.6450%'},
+    #     {'01. symbol': 'GOOGL', '02. open': '170.0000', '03. high': '173.2500', '04. low': '168.9000', '05. price': '172.1000', '06. volume': '49000000', '07. latest trading day': '2025-03-01', '08. previous close': '169.7500', '09. change': '2.3500', '10. change percent': '1.3840%'}]
      
     # company_stock_data = [
     #     {'01. symbol': 'NVDA', '02. open': '118.0200', '03. high': '125.0900', '04. low': '116.4000', '05. price': '124.9200', '06. volume': '389091145', '07. latest trading day': '2025-02-28', '08. previous close': '120.1500', '09. change': '4.7700', '10. change percent': '3.9700%'}, 
@@ -490,6 +490,7 @@ def tabulate_data() -> None:
     print(tabulate(table_data, headers=headers, tablefmt='grid'))
     
 
+#  Visualise the stock data in a candlestick chart
 def visualise_data():
     # Print the list of companies and get the user's selection
     user_option = get_user_option()
@@ -504,113 +505,99 @@ def visualise_data():
     #  query the database for the historical stock data
     rows = fetch_historical_stock_data(symbols)
     
-     # Dictionary to store data by symbol
-    data_by_symbol = {}
-
-    # Parse the data, group by symbol
-    for row in rows:
-        symbol = row[0]
-        trading_day_str = row[1]
-        price_str = row[2]
-        
-        # Convert to date and float
-        trading_day = datetime.strptime(trading_day_str, '%Y-%m-%d').date()
-        price = float(price_str)
-
-        if symbol not in data_by_symbol:
-            data_by_symbol[symbol] = []
-        data_by_symbol[symbol].append((trading_day, price))
-    
-    # Sort each symbol's data by date
-    for symbol in data_by_symbol:
-        data_by_symbol[symbol].sort(key=lambda x: x[0])  # Sort by the date
-    
-    # Create the plot
-    plt.figure(figsize=(10, 6))
-    
-    for symbol, data_points in data_by_symbol.items():
-        # Separate out the dates and prices for plotting
-        dates = [dp[0] for dp in data_points]
-        prices = [dp[1] for dp in data_points]
-
-        # Plot one line per symbol
-        plt.plot(dates, prices, label=symbol)
-
-    plt.title("Stock Prices Over Time")
-    plt.xlabel("Date")
-    plt.ylabel("Price")
-    plt.legend()
-    plt.gcf().autofmt_xdate()  # Rotate date labels for better readability
-
-    # Show the plot
-    plt.show()
-    
-    
-def visualise_data2():
-    # Print the list of companies and get the user's selection
-    user_option = get_user_option()
-    if user_option == 'quit':
-        return
-    elif user_option == 'all':
-        # Symbols can be a list with a single company, or a list of all companies
-        symbols = list(COMPANIES.values())
-    else:
-        symbols = [COMPANIES[user_option]]
-        
-    #  query the database for the historical stock data
-    rows = fetch_historical_stock_data(symbols)
-    
+    # Column names matching the tuple order
     columns = [
-        "ticker", "date", "close", "change", "percent_change", "volume",
+        "symbol", "date", "close", "change", "percent_change", "volume",
         "high", "low", "open", "prev_close"
     ]
 
     # Convert rows to a DataFrame
-    df = pd.DataFrame(rows, columns=columns)
+    dataframe = pd.DataFrame(rows, columns=columns)
     
-    # Convert date to datetime
-    df['date'] = pd.to_datetime(df['date'])
+    # Convert date to datetime - this is required for the candlestick chart 
+    dataframe['date'] = pd.to_datetime(dataframe['date'])
 
     # Convert numeric columns
     numeric_cols = ["close", "change", "volume", "high", "low", "open", "prev_close"]
     for col in numeric_cols:
-        df[col] = pd.to_numeric(df[col])
+        dataframe[col] = pd.to_numeric(dataframe[col])
 
-    # Get unique tickers
-    tickers = df['ticker'].unique()
-    n_tickers = len(tickers)
 
-    # Create subplots – one row per ticker
-    fig, axs = plt.subplots(n_tickers, 1, figsize=(10, 4 * n_tickers))
-    if n_tickers == 1:
-        axs = [axs]  # Make sure axs is iterable if there's only one ticker
+    symbols = COMPANIES.values()
+    symbol_count = len(symbols)
 
-    # Create legend handles (green for up, red for down)
-    up_patch = mpatches.Patch(color='green', label='Close >= Open')
-    down_patch = mpatches.Patch(color='red', label='Close < Open')
 
-    # Plot data for each ticker
-    for ax, ticker in zip(axs, tickers):
-        df_ticker = df[df['ticker'] == ticker].sort_values('date')
+    # Create subplots – one row per symbol
+    fig, axs = plt.subplots(symbol_count, 1, figsize=(10, 4 * symbol_count))
+    if symbol_count == 1:
+        # Make sure axs is iterable if there's only one symbol
+        # There may be multiiple symobls if the user selects all
+        axs = [axs]  
 
-        for _, row in df_ticker.iterrows():
+    # Create legend patches (green for increase, red for decrease)
+    up_patch = mpatches.Patch(color='green', label='Indicates daily increase')
+    down_patch = mpatches.Patch(color='red', label='Indicates daily drop')
+    high_low_patch = mpatches.Patch(color='yellow', label='Daily High-Low')
+
+    for ax, symbol in zip(axs, symbols):
+        df_symbol = dataframe[dataframe['symbol'] == symbol].sort_values('date')
+
+        # Plot candlesticks
+        x_vals = df_symbol['date']
+    
+        closes = df_symbol['close']
+        
+        for _, row in df_symbol.iterrows():
             day = row['date']
-            op = row['open']
-            cl = row['close']
-            hi = row['high']
-            lo = row['low']
+            open = row['open']
+            close = row['close']
+            high = row['high']
+            low = row['low']
 
             # Choose color: green if close >= open, otherwise red
-            color = 'green' if cl >= op else 'red'
+            color = 'green' if close >= open else 'red'
 
-            # Draw the high-low line
-            ax.plot([day, day], [lo, hi], color='black', linewidth=1)
+            # Compute the bottom, top, and height for the candlestick body
+            bar_bottom = min(open, close)
+            bar_top = max(open, close)
+            bar_height = bar_top - bar_bottom
+            
+            # Draw the candlestick body for open and close
+            ax.bar(day, bar_height, bottom=bar_bottom, width=0.3, color=color, align='edge')
 
-            # Draw the candlestick body
-            ax.bar(day, cl - op, bottom=min(op, cl), width=0.6, color=color, align='center')
 
-        # Configure the subplot
-        ax.set_title(f'Candlestick Chart for {ticker}', fontsize=12)
+            # Annotate with opening and closing 
+            # The top and bottom logic is required, since the bar is inverted on days when the symbol price drops.(red bar)
+            ax.text(day, open, f"Open: {open:.2f}", ha='left', 
+                    va= 'top' if close >= open else 'bottom', fontsize=8, color='black')
+  
+            ax.text(day, close, f"Close: {close:.2f}", ha='left', 
+                    va= 'bottom' if close >= open else 'top', fontsize=8, color='black')
+            
+                    #  Draw the candlestick body for high and low
+            #  -7 is the offset to the left to align to the left of the open-close candlestick 
+            ax.bar(day + pd.Timedelta(hours=-7), high - low, bottom=low, width=0.3, color='yellow', align='edge')
+            # Annotate with high and low
+            ax.text(day, high, f"High: {high:.2f}", ha='right', 
+                    va= 'bottom', fontsize=8, color='black')
+            
+            ax.text(day, low, f"Low: {low:.2f}", ha='right', 
+                    va= 'bottom', fontsize=8, color='black')
+
+        # Now plot the line for daily highs (blue line with markers)
+        line_high, = ax.plot(
+            x_vals, 
+            closes, 
+            color='blue', 
+            marker='o', 
+            linewidth=1, 
+            label='Daily Close'
+        )
+
+        # Configure the subplot / header
+        #  Get the company name from the COMPANIES dictionary which matches the symbol
+        company_name = [name for name, sym in COMPANIES.items() if sym == symbol][0]
+        ax.set_title(f'Chart for {company_name}', fontsize=12)
         ax.set_ylabel('Price')
         ax.grid(True)
 
@@ -623,8 +610,8 @@ def visualise_data2():
             label.set_rotation(45)
             label.set_horizontalalignment('right')
 
-        # Add a legend explaining the colors
-        ax.legend(handles=[up_patch, down_patch], loc='best')
+        # Plot the legend
+        ax.legend(handles=[up_patch, down_patch, line_high, high_low_patch], loc='best')
 
     # Tighten the layout to prevent overlapping labels
     plt.tight_layout()
@@ -633,9 +620,9 @@ def visualise_data2():
     
 
 def main():
-    # (company_stock_data, headlines_data) = fetch_data()
-    # print("\nStarting database update...")
-    # update_stock_db(company_stock_data, headlines_data) 
+    (company_stock_data, headlines_data) = fetch_data()
+    print("\nStarting database update...")
+    update_stock_db(company_stock_data, headlines_data) 
     
     # This functions are commented out as they are only used in development
     # write_stock_data_to_txt_file(company_stock_data, headlines_data)
@@ -646,7 +633,7 @@ def main():
     # tabulate_data()
     
     
-    visualise_data2()
+    visualise_data()
     
 if __name__ == "__main__":
     main()
