@@ -1,0 +1,22 @@
+/Users/jpl/code/setu/scripting/assignment_two/stock.py:247: SyntaxWarning: invalid escape sequence '\S'
+  print("\Stock table contents:")
+
+Available options:
+1. Nvidia (NVDA)
+2. Microsoft (MSFT)
+3. Tesla (TSLA)
+4. Alphabet (GOOGL)
+A. All companies
+
+Enter selection number or 'A' for all (or 'Q' to quit): Traceback (most recent call last):
+  File "/Users/jpl/code/setu/scripting/assignment_two/stock.py", line 618, in <module>
+    main()
+  File "/Users/jpl/code/setu/scripting/assignment_two/stock.py", line 612, in main
+    tabulate_data()
+  File "/Users/jpl/code/setu/scripting/assignment_two/stock.py", line 351, in tabulate_data
+    user_option = get_user_option()
+                  ^^^^^^^^^^^^^^^^^
+  File "/Users/jpl/code/setu/scripting/assignment_two/stock.py", line 289, in get_user_option
+    choice = input("\nEnter selection number or 'A' for all (or 'Q' to quit): ").strip()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+EOFError: EOF when reading a line

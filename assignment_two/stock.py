@@ -253,50 +253,20 @@ def verify_db_contents(cur: sqlite3.Cursor) -> None:
     for row in rows:
         print(row)
 
+#  Fetches the stock and headline data for all companies
 def fetch_data() -> tuple[list[dict[str, str]], list[dict[str, list[tuple[str, str]]]]]:
 
-    # company_stock_data = []
-    # headlines_data = []
+    company_stock_data = []
+    headlines_data = []
     
-    # for company, symbol in COMPANIES.items():
-    #     print(f"Fetching data for {company} symbol:({symbol})...")
-    #     company_data = fetch_stock_data(symbol)
-    #     company_stock_data.append(company_data)        
-    #     headline_data = get_yahoo_headlines(symbol)
-    #     headlines_data.append({symbol: headline_data})
-    
-    # headlines_data = [
-    #     {'NVDA': [('IsNVIDIACorporation (NVDA) The Best Money Making Stock To Buy Now?', 'https://r.search.yahoo.com/_ylt=AwrhWNbmRMRnwBIBTyNXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125543/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fnvidia-corporation-nvda-best-money-164657872.html%3ffr%3dsycsrp_catchall/RK=2/RS=geeDjOznYxM0qUvaiOjOeD_Vwd4-'), ('Jim Cramer onNVIDIACorporation (NVDA): ‘There Are People Who Think It’s Dramatically Overvalued. And I Don’t Get That’', 'https://r.search.yahoo.com/_ylt=AwrhWNbmRMRnwBIBUyNXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125543/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fjim-cramer-nvidia-corporation-nvda-080254921.html%3ffr%3dsycsrp_catchall/RK=2/RS=WGJGNfohRkQnN9jl_ReR7R4XB88-'), ('Jim Cramer onNVIDIA(NVDA): ‘I Think You Have To Wait To See What The Numbers Are Because The Company...', 'https://r.search.yahoo.com/_ylt=AwrhWNbmRMRnwBIBVyNXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125543/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fjim-cramer-nvidia-nvda-think-115144647.html%3ffr%3dsycsrp_catchall/RK=2/RS=YIezBKqVCrU0WanZD6KCUyJWx8U-')]}, 
-    #     {'MSFT': [('Here’s WhyMicrosoft(MSFT) Stock Returned 13% in Q4', 'https://r.search.yahoo.com/_ylt=AwrhUL3nRMRnPQIAT6BXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125544/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fwhy-microsoft-msft-stock-returned-142857739.html%3ffr%3dsycsrp_catchall/RK=2/RS=qD.mhqWeXwaYkaUQZuVOna55gkM-'), ('MicrosoftCorporation (MSFT): Among the Best Stocks to Buy According to Bill Gates', 'https://r.search.yahoo.com/_ylt=AwrhUL3nRMRnPQIAU6BXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125544/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fmicrosoft-corporation-msft-among-best-191748014.html%3ffr%3dsycsrp_catchall/RK=2/RS=ElJl.tRNPxxcJ6RcENB1O0zTMuk-'), ('MicrosoftCorporation (MSFT): A Bull Case Theory', 'https://r.search.yahoo.com/_ylt=AwrhUL3nRMRnPQIAV6BXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125544/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fmicrosoft-corporation-msft-bull-case-174225857.html%3ffr%3dsycsrp_catchall/RK=2/RS=jRIQ96zBXnjaCOqwx6nVsrroCmo-')]}, 
-    #     {'TSLA': [('WhyTesla(TSLA) Stock Is Sinking Today', 'https://r.search.yahoo.com/_ylt=AwrFGnboRMRnSAIAJ_pXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125545/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fwhy-tesla-tsla-stock-sinking-173331602.html%3ffr%3dsycsrp_catchall/RK=2/RS=FKcIiwH2ReVSMVncIOMvzz_SDWw-'), ('Analyst:Tesla(TSLA) Still Trading At a ‘Fraction’ of Market Opportunity', 'https://r.search.yahoo.com/_ylt=AwrFGnboRMRnSAIAK_pXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125545/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fanalyst-tesla-tsla-still-trading-195358797.html%3ffr%3dsycsrp_catchall/RK=2/RS=J4I9VURTK6fgBANb8bGMmCC9Vw4-'), ('Jim Cramer onTesla, Inc. (TSLA) CEO Elon Musk: ‘There’s A Changeover That He’s Doing On The Autos’', 'https://r.search.yahoo.com/_ylt=AwrFGnboRMRnSAIAL_pXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125545/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fjim-cramer-tesla-inc-tsla-074529126.html%3ffr%3dsycsrp_catchall/RK=2/RS=T2Dn4h46A1kXc_md2nKRt9glsd8-')]}, 
-    #     {'GOOGL': [('Alphabet (GOOGL) Reliance on International Sales: What Investors Need to Know', 'https://r.search.yahoo.com/_ylt=Awril_fpRMRnMgIAOVJXNyoA;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125546/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2falphabet-googl-reliance-international-sales-141527238.html%3ffr%3dsycsrp_catchall/RK=2/RS=bhwBBIlIhCD163gddYM6JBqmiw0-'), ("CanGOOGL's Cloud Investments Push the Stock Higher in 2025?", 'https://r.search.yahoo.com/_ylt=Awril_fpRMRnMgIAQlJXNyoA;_ylu=Y29sbwNiZjEEcG9zAzIEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125546/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2fgoogls-cloud-investments-push-stock-161300162.html%3ffr%3dsycsrp_catchall/RK=2/RS=AYinFGiT2MWC2Oi3mqFD0lXo7DY-'), ('Alphabet (GOOGL) Ascends But Remains Behind Market: Some Facts to Note', 'https://r.search.yahoo.com/_ylt=Awril_fpRMRnMgIARlJXNyoA;_ylu=Y29sbwNiZjEEcG9zAzMEdnRpZAMEc2VjA3Nj/RV=2/RE=1742125546/RO=10/RU=https%3a%2f%2ffinance.yahoo.com%2fnews%2falphabet-googl-ascends-remains-behind-224518632.html%3ffr%3dsycsrp_catchall/RK=2/RS=aDjGqd7D7Ig5p.g43aEB.IMpl0A-')]}]
-   
-    # #   original  
-    # company_stock_data = [
-    #     {'01. symbol': 'NVDA', '02. open': '120.5000', '03. high': '127.0000', '04. low': '119.3000', '05. price': '126.4500', '06. volume': '400000000', '07. latest trading day': '2025-03-01', '08. previous close': '121.2000', '09. change': '5.2500', '10. change percent': '4.3320%'},
-    #     {'01. symbol': 'MSFT', '02. open': '395.5000', '03. high': '401.2500', '04. low': '390.0000', '05. price': '400.5000', '06. volume': '33000000', '07. latest trading day': '2025-03-01', '08. previous close': '396.7500', '09. change': '3.7500', '10. change percent': '0.9450%'},
-    #     {'01. symbol': 'TSLA', '02. open': '285.0000', '03. high': '300.5000', '04. low': '280.1000', '05. price': '299.8000', '06. volume': '117000000', '07. latest trading day': '2025-03-01', '08. previous close': '286.5000', '09. change': '13.3000', '10. change percent': '4.6450%'},
-    #     {'01. symbol': 'GOOGL', '02. open': '170.0000', '03. high': '173.2500', '04. low': '168.9000', '05. price': '172.1000', '06. volume': '49000000', '07. latest trading day': '2025-03-01', '08. previous close': '169.7500', '09. change': '2.3500', '10. change percent': '1.3840%'}]
-     
-    # company_stock_data = [
-    #     {'01. symbol': 'NVDA', '02. open': '118.0200', '03. high': '125.0900', '04. low': '116.4000', '05. price': '124.9200', '06. volume': '389091145', '07. latest trading day': '2025-02-28', '08. previous close': '120.1500', '09. change': '4.7700', '10. change percent': '3.9700%'}, 
-    #     {'01. symbol': 'MSFT', '02. open': '392.6550', '03. high': '397.6300', '04. low': '386.5700', '05. price': '396.9900', '06. volume': '32845658', '07. latest trading day': '2025-02-28', '08. previous close': '392.5300', '09. change': '4.4600', '10. change percent': '1.1362%'}, 
-    #     {'01. symbol': 'TSLA', '02. open': '279.5000', '03. high': '293.8800', '04. low': '273.6000', '05. price': '292.9800', '06. volume': '115696968', '07. latest trading day': '2025-02-28', '08. previous close': '281.9500', '09. change': '11.0300', '10. change percent': '3.9120%'}, 
-    #     {'01. symbol': 'GOOGL', '02. open': '168.6800', '03. high': '170.6100', '04. low': '166.7700', '05. price': '170.2800', '06. volume': '48130565', '07. latest trading day': '2025-02-28', '08. previous close': '168.5000', '09. change': '1.7800', '10. change percent': '1.0564%'}] 
-    
-    
-    # company_stock_data = [
-    # {'01. symbol': 'NVDA', '02. open': '121.1000', '03. high': '128.2000', '04. low': '120.3000', '05. price': '127.6000', '06. volume': '405000000', '07. latest trading day': '2025-03-02', '08. previous close': '126.4500', '09. change': '1.1500', '10. change percent': '0.9091%'},
-    # {'01. symbol': 'MSFT', '02. open': '397.8000', '03. high': '403.0000', '04. low': '392.4000', '05. price': '402.0000', '06. volume': '33500000', '07. latest trading day': '2025-03-02', '08. previous close': '400.5000', '09. change': '1.5000', '10. change percent': '0.3750%'},
-    # {'01. symbol': 'TSLA', '02. open': '287.5000', '03. high': '302.0000', '04. low': '282.3000', '05. price': '300.5000', '06. volume': '118000000', '07. latest trading day': '2025-03-02', '08. previous close': '299.8000', '09. change': '0.7000', '10. change percent': '0.2334%'},
-    # {'01. symbol': 'GOOGL', '02. open': '171.2000', '03. high': '174.5000', '04. low': '169.8000', '05. price': '173.5000', '06. volume': '49500000', '07. latest trading day': '2025-03-02', '08. previous close': '172.1000', '09. change': '1.4000', '10. change percent': '0.8139%'}]
-
-    # company_stock_data = [
-    #     {'01. symbol': 'NVDA', '02. open': '122.3000', '03. high': '129.5000', '04. low': '121.4000', '05. price': '128.7500', '06. volume': '410000000', '07. latest trading day': '2025-03-03', '08. previous close': '128.7500', '09. change': '1.2000', '10. change percent': '0.9310%'},
-    #     {'01. symbol': 'MSFT', '02. open': '402.5000', '03. high': '408.0000', '04. low': '398.0000', '05. price': '407.0000', '06. volume': '34000000', '07. latest trading day': '2025-03-03', '08. previous close': '402.0000', '09. change': '5.0000', '10. change percent': '1.2438%'},
-    #     {'01. symbol': 'TSLA', '02. open': '289.0000', '03. high': '305.0000', '04. low': '285.0000', '05. price': '303.5000', '06. volume': '119500000', '07. latest trading day': '2025-03-03', '08. previous close': '300.5000', '09. change': '3.0000', '10. change percent': '1.0000%'},
-    #     {'01. symbol': 'GOOGL', '02. open': '172.5000', '03. high': '175.8000', '04. low': '171.0000', '05. price': '175.0000', '06. volume': '50000000', '07. latest trading day': '2025-03-03', '08. previous close': '173.5000', '09. change': '1.5000', '10. change percent': '0.8633%'}]
-
+    for company, symbol in COMPANIES.items():
+        print(f"Fetching data for {company} symbol:({symbol})...")
+        #  Fetch the stock data for the company 
+        company_data = fetch_stock_data(symbol)
+        company_stock_data.append(company_data)        
+        #  Fetch the headlines for the company
+        headline_data = get_yahoo_headlines(symbol)
+        headlines_data.append({symbol: headline_data})
     
     return (company_stock_data, headlines_data)
 
@@ -522,8 +492,7 @@ def visualise_data():
     for col in numeric_cols:
         dataframe[col] = pd.to_numeric(dataframe[col])
 
-
-    symbols = COMPANIES.values()
+    symbols = dataframe['symbol'].unique()
     symbol_count = len(symbols)
     #  Calculate the number of days in the dataset - Newest date less the oldest date
     #  This is used to determine the width of the chart
@@ -542,6 +511,7 @@ def visualise_data():
     down_patch = mpatches.Patch(color='red', label='Indicates daily drop')
     high_low_patch = mpatches.Patch(color='yellow', label='Daily High-Low')
 
+    #  Iterate through the subplots and symbols
     for ax, symbol in zip(axs, symbols):
         df_symbol = dataframe[dataframe['symbol'] == symbol].sort_values('date')
 
@@ -557,7 +527,7 @@ def visualise_data():
             high = row['high']
             low = row['low']
 
-            # Choose color: green if close >= open, otherwise red
+            # Choose color: green if close >= open, otherwise red for the candlestick body
             color = 'green' if close >= open else 'red'
 
             # Compute the bottom, top, and height for the candlestick body
@@ -573,22 +543,20 @@ def visualise_data():
             # The top and bottom logic is required, since the bar is inverted on days when the symbol price drops.(red bar)
             ax.text(day, open, f"Open: {open:.2f}", ha='left', 
                     va= 'top' if close >= open else 'bottom', fontsize=8, color='black')
-  
             ax.text(day, close, f"Close: {close:.2f}", ha='left', 
                     va= 'bottom' if close >= open else 'top', fontsize=8, color='black')
             
-                    #  Draw the candlestick body for high and low
+            #  Draw the candlestick body for high and low
             #  -7 is the offset to the left to align to the left of the open-close candlestick 
             ax.bar(day + pd.Timedelta(hours=-7), high - low, bottom=low, width=0.3, color='yellow', align='edge')
             
             # Annotate yellow bar with high and low
             ax.text(day, high, f"High: {high:.2f}", ha='right', 
-                    va= 'bottom', fontsize=8, color='black')
-            
+                    va= 'bottom', fontsize=8, color='black')         
             ax.text(day, low, f"Low: {low:.2f}", ha='right', 
                     va= 'bottom', fontsize=8, color='black')
 
-        # Now plot the line for daily highs (blue line with markers)
+        # plot the line for daily highs (blue line with markers)
         line_high, = ax.plot(
             x_vals, 
             closes, 
@@ -605,11 +573,18 @@ def visualise_data():
         ax.set_ylabel('Price')
         ax.grid(True)
 
-        # Format the x-axis as dates
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-        ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+        # Get all unique dates for this symbol
+        dates = df_symbol['date'].unique()
 
-        # Rotate date labels for readability
+        # Set one tick for each date
+        ax.set_xticks(dates)
+
+        # Format x-axis with gridlines for each date
+        ax.grid(True, axis='x')  # Add vertical gridlines
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+        ax.xaxis.set_major_locator(mdates.DayLocator())  # Force a tick for each day
+
+        # Rotate labels for better readability
         for label in ax.get_xticklabels():
             label.set_rotation(45)
             label.set_horizontalalignment('right')
@@ -633,10 +608,8 @@ def main():
     # verify_db_contents()
     
     # Display the stock data in a formatted table
+    tabulate_data()
     # Display historical data for user-selected company
-    # tabulate_data()
-    
-    
     visualise_data()
     
 if __name__ == "__main__":
